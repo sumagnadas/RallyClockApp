@@ -1,12 +1,12 @@
 from kivy.app import App
-from kivy.uix.widget import Widget
+from kivy.uix.boxlayout import BoxLayout
 
-class HomeWidget(Widget):
+class Home(BoxLayout):
     pass
 
 class MainApp(App):
     def build(self):
-        return HomeWidget()
+        return Home()
 
 if __name__=="__main__":
     MainApp().run()

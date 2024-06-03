@@ -1,20 +1,100 @@
 #: kivy 2.0.0
 
+<RoundedButton@Button>
+	background_color: 0,0,0,0
+    background_normal: ''
+    background_down:''
+    canvas.before:
+        Color:
+            rgb: 200/255, 200/255, 200/255
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [10,]
+
 <Home>:
+    time: tm
+    canvas.before:
+        Color:
+            rgb: 1,1,1
+        Rectangle:
+            size: self.size
     size: root.size
     BoxLayout:
         orientation: 'vertical'
-        BoxLayout:
-            size_hint: 1, 0.5
-            orientation: 'vertical'
-            Label:
-                size_hint: 1,0.3
-                text: "button 1"
-            Label:
-                size_hint: 1,0.3
-                text: "button 2"
-            Label:
-                size_hint: 1,0.3
-                text: "button 3"
+        size: self.parent.size
+        padding: 10, 10
+        spacing: 10
+        Label:
+            size_hint_y: 0.05
+            color: 0,0,0
+            text: 'Home'
+        RoundedButton:
+            padding:10,10
+            color: 0,0,0
+            height: root.height * 0.15
+            size_hint_y: None
+            text: "button 1"
+            on_press: root.on_b1(self)
+            on_release: root.on_release(self,0)
+        RoundedButton:
+            color: 0,0,0
+            height: root.height * 0.15
+            size_hint_y: None
+            text: "button 2"
+            on_press: root.on_b2(self)
+            on_release: root.on_release(self, 1)
+        RoundedButton:
+            color: 0,0,0
+            size_hint_y: None
+            height: root.height * 0.15
+            text: "button 3"
+            on_press: root.on_b3(self)
+            on_release: root.on_release(self, 2)
+        GridLayout:
+            row_default_height: root.height * 0.15
+            row_force_default: True
+            cols:3
+            rows:1
+            spacing: 10, 0
+            RoundedButton:
+                color: 0,0,0
+                text: 'button 4a'
+                on_press: root.on_b4(self)
+                on_release: root.on_release(self, 3)
+            RoundedButton:
+                color: 0,0,0
+                text: 'button 4b'
+                on_press: root.on_b5(self)
+                on_release: root.on_release(self, 4)
+            RoundedButton:
+                color: 0,0,0
+                text: 'button 4c'
+                on_press: root.on_b6(self)
+                on_release: root.on_release(self, 5)
         Widget:
-            size_hint: 0.5, 1
+            canvas:
+                Color:
+                    rgba: 0,0,0,0
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+        BoxLayout:
+            background_color: 0,0,0,1
+            orientation:'horizontal'
+            RoundedButton
+                size_hint_x: 0.25
+                color: 0,0,0
+                text: 'settings'
+                on_press: root.on_set(self)
+                on_release: root.on_release(self, 6)
+            Label:
+                id: tm
+                size_hint_x:0.35
+                color: 0,0,0
+                text: "00:00.00"
+            Label:
+                id: bat
+                size_hint_x: 0.4
+                color: 0,0,0
+                text: "00:00.00"

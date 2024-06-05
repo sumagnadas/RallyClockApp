@@ -1,17 +1,5 @@
 #: kivy 2.0.0
 
-<RoundedButton@Button>
-	background_color: 0,0,0,0
-    background_normal: ''
-    background_down:''
-    canvas.before:
-        Color:
-            rgb: 200/255, 200/255, 200/255
-        RoundedRectangle:
-            pos: self.pos
-            size: self.size
-            radius: [10,]
-
 <Home>:
     time: tm
     canvas.before:
@@ -36,21 +24,21 @@
             size_hint_y: None
             text: "button 1"
             on_press: root.on_b1(self)
-            on_release: root.on_release(self,0)
+            on_release: app.on_release(self,0)
         RoundedButton:
             color: 0,0,0
             height: root.height * 0.15
             size_hint_y: None
             text: "button 2"
             on_press: root.on_b2(self)
-            on_release: root.on_release(self, 1)
+            on_release: app.on_release(self, 1)
         RoundedButton:
             color: 0,0,0
             size_hint_y: None
             height: root.height * 0.15
             text: "button 3"
             on_press: root.on_b3(self)
-            on_release: root.on_release(self, 2)
+            on_release: app.on_release(self, 2)
         GridLayout:
             row_default_height: root.height * 0.15
             row_force_default: True
@@ -61,17 +49,17 @@
                 color: 0,0,0
                 text: 'button 4a'
                 on_press: root.on_b4(self)
-                on_release: root.on_release(self, 3)
+                on_release: app.on_release(self, 3)
             RoundedButton:
                 color: 0,0,0
                 text: 'button 4b'
                 on_press: root.on_b5(self)
-                on_release: root.on_release(self, 4)
+                on_release: app.on_release(self, 4)
             RoundedButton:
                 color: 0,0,0
                 text: 'button 4c'
                 on_press: root.on_b6(self)
-                on_release: root.on_release(self, 5)
+                on_release: app.on_release(self, 5)
         Widget:
             canvas:
                 Color:
@@ -87,7 +75,7 @@
                 color: 0,0,0
                 text: 'settings'
                 on_press: root.on_set(self)
-                on_release: root.on_release(self, 6)
+                on_release: app.on_release(self, 6)
             Label:
                 id: tm
                 size_hint_x:0.35

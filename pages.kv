@@ -1,0 +1,54 @@
+#: kivy 2.0.0
+#:import now datetime.datetime
+
+<RoundedButton>
+	background_color: 0,0,0,0
+    background_normal: ''
+    background_down:''
+    canvas.before:
+        Color:
+            rgb: 200/255, 200/255, 200/255
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [10,]
+
+<Page3>:
+    canvas.before:
+        Color:
+            rgb: 1,1,1
+        Rectangle:
+            size: self.size
+    size:root.size
+    BoxLayout:
+        orientation: 'vertical'
+        size: self.parent.size
+        padding: 10, 10
+        spacing: 10
+
+        BoxLayout:
+            size_hint_y: 0.1
+            background_color: 0,0,0,1
+            orientation:'horizontal'
+            RoundedButton
+                size_hint_x: 0.2
+                color: 0,0,0
+                text: 'back'
+                on_press: app.sm.current = "Home"
+                #on_release: app.on_release(self, 6)
+            Label:
+                id: tm
+                size_hint_x:0.5
+                color: 0,0,0
+            Label:
+                size_hint_x: 0.3
+                color: 0,0,0
+                text: "00:00.00"
+        Label:
+            size_hint_y: 0.8
+            text: 'hello'
+        RoundedButton:
+            color: 0,0,0
+            text: 'Capture'
+            on_press: print(f"Captured time:{now.now().time()}")
+

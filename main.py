@@ -1,29 +1,25 @@
 from kivy.app import App
 from kivy.clock import Clock
-from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.widget import Widget
 from kivy.properties import ObjectProperty
 from kivy.graphics import Color, RoundedRectangle
 from datetime import datetime
+from pages import Page3
+from kivy.uix.screenmanager import ScreenManager, Screen, NoTransition
 
-class Home(Widget):
-    _color=dict()
-    _rect = dict()
+class Home(Screen):
     time = ObjectProperty(None)
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         Clock.schedule_interval(self.update_clock, 1/60)
     def _btnchg(self, obj,i):
         with obj.canvas:
-            self._color[i] = Color(200/255, 200/255, 200/255,0.9)
-            self._rect[i] = RoundedRectangle(pos=obj.pos, size=obj.size)
-
-    def on_release(self, obj, i):
-        obj.canvas.remove(self._color[i])
-        obj.canvas.remove(self._rect[i])
-
+            App.get_running_app()._color[i] = Color(200/255, 200/255, 200/255,0.9)
+            App.get_running_app()._rect[i] = RoundedRectangle(pos=obj.pos, size=obj.size)
     def on_b1(self, obj):
         print("button1")
+        self.manager.current = "Page3"
         self._btnchg(obj, 0)
         print(obj)
     def on_b2(self, obj):
@@ -54,8 +50,18 @@ class Home(Widget):
       self.time.text = str(datetime.now().time())
 
 class MainApp(App):
+    _color=dict()
+    _rect = dict()
     def build(self):
-        return Home()
+        #self.settings_cls = SetingsWI
+        self.sm = ScreenManager(transition=NoTransition())
+        self.sm.add_widget(Home(name="Home"))
+        self.sm.add_widget(Page3(name="Page3"))
+        return self.sm
+    def on_release(self, obj, i):
+        obj.canvas.remove(self._color[i])
+        obj.canvas.remove(self._rect[i])
+
 
 if __name__=="__main__":
     MainApp().run()

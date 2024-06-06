@@ -1,7 +1,7 @@
 #: kivy 2.0.0
 
 <Home>:
-    time: tm
+    #time: tm
     canvas.before:
         Color:
             rgb: 1,1,1
@@ -76,11 +76,11 @@
                 text: 'settings'
                 on_press: root.on_set(self)
                 on_release: app.on_release(self, 6)
-            Label:
-                id: tm
+            TimeLabel:
+                #id: tm
                 size_hint_x:0.35
                 color: 0,0,0
-                text: "00:00.00"
+                #text: app.time
             Label:
                 id: bat
                 size_hint_x: 0.4

@@ -1,9 +1,6 @@
 from kivy.app import App
-from kivy.clock import Clock
-from kivy.uix.widget import Widget
 from kivy.properties import ObjectProperty
 from kivy.graphics import Color, RoundedRectangle
-from datetime import datetime
 from pages import Page3
 from kivy.uix.screenmanager import ScreenManager, Screen, NoTransition
 
@@ -12,7 +9,6 @@ class Home(Screen):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        Clock.schedule_interval(self.update_clock, 1/60)
     def _btnchg(self, obj,i):
         with obj.canvas:
             App.get_running_app()._color[i] = Color(200/255, 200/255, 200/255,0.9)
@@ -46,12 +42,11 @@ class Home(Screen):
         print("settings")
         self._btnchg(obj, 6)
         print(obj)
-    def update_clock(self, dt):
-      self.time.text = str(datetime.now().time())
-
 class MainApp(App):
     _color=dict()
     _rect = dict()
+    time = "00:00:00"
+
     def build(self):
         #self.settings_cls = SetingsWI
         self.sm = ScreenManager(transition=NoTransition())

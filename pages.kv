@@ -1,6 +1,34 @@
 #: kivy 2.0.0
 #:import now datetime.datetime
 
+<RallyRow>:
+    car: car
+    carno : car.text
+    tm:tm
+    orientation: 'horizontal'
+    padding:10,10
+    spacing: 10
+    NumericInput:
+        id: car
+        text:str(root.carno)
+        size_hint_x: 0.2
+        size: self.size
+        on_text_validate: root.on_enter()
+    TimeLabel:
+        color: 0, 0, 0
+        id: tm
+        update:False
+        time:root.time
+
+<RV>:
+    viewclass: 'RallyRow'
+    RecycleBoxLayout:
+        default_size: None, dp(56)
+        default_size_hint: 1, None
+        size_hint_y: None
+        height: self.minimum_height
+        orientation: 'vertical'
+
 <RoundedButton>
 	background_color: 0,0,0,0
     background_normal: ''
@@ -14,6 +42,7 @@
             radius: [10,]
 
 <Page3>:
+    rv:rv
     canvas.before:
         Color:
             rgb: 1,1,1
@@ -25,7 +54,6 @@
         size: self.parent.size
         padding: 10, 10
         spacing: 10
-
         BoxLayout:
             size_hint_y: 0.1
             background_color: 0,0,0,1
@@ -43,13 +71,12 @@
                 size_hint_x: 0.3
                 color: 0,0,0
                 text: "Battery"
-        Label:
+        RV:
+            id: rv
             size_hint_y: 0.8
-            color: 0,0,0
-            text: 'hello'
         RoundedButton:
             size_hint_y: 0.1
             color: 0,0,0
             text: 'Capture'
-            on_press: print(f"Captured time:{now.now().time()}")
+            on_press: root.on_capture(now.now().time())
 

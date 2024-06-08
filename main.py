@@ -1,12 +1,9 @@
 from kivy.app import App
-from kivy.properties import ObjectProperty
 from kivy.graphics import Color, RoundedRectangle
 from pages import Page3
 from kivy.uix.screenmanager import ScreenManager, Screen, NoTransition
 
 class Home(Screen):
-    time = ObjectProperty(None)
-
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
     def _btnchg(self, obj,i):
@@ -45,13 +42,13 @@ class Home(Screen):
 class MainApp(App):
     _color=dict()
     _rect = dict()
-    time = "00:00:00"
 
     def build(self):
         #self.settings_cls = SetingsWI
         self.sm = ScreenManager(transition=NoTransition())
         self.sm.add_widget(Home(name="Home"))
         self.sm.add_widget(Page3(name="Page3"))
+        self.rv = self.sm.get_screen('Page3').rv
         return self.sm
     def on_release(self, obj, i):
         obj.canvas.remove(self._color[i])

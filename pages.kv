@@ -42,11 +42,13 @@
             Label:
                 size_hint_x: 0.3
                 color: 0,0,0
-                text: "00:00.00"
+                text: "Battery"
         Label:
             size_hint_y: 0.8
+            color: 0,0,0
             text: 'hello'
         RoundedButton:
+            size_hint_y: 0.1
             color: 0,0,0
             text: 'Capture'
             on_press: print(f"Captured time:{now.now().time()}")

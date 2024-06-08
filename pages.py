@@ -19,7 +19,6 @@ class TimeLabel(Label):
       self.text = str(datetime.now().time())
     def on_time(self, instance, value):
         self.text = self.time
-        print(self.time)
 class RoundedButton(Button):
     pass
 class SetPage(SettingsWithNoMenu):

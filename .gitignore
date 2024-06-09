@@ -1,2 +1,4 @@
 tutorial*
 __pycache__/*
+.buildozer/*
+bin/*

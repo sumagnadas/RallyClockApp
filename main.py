@@ -42,10 +42,10 @@ class Home(Screen):
 class MainApp(App):
     _color=dict()
     _rect = dict()
+    sm = ScreenManager(transition=NoTransition())
 
     def build(self):
         #self.settings_cls = SetingsWI
-        self.sm = ScreenManager(transition=NoTransition())
         self.sm.add_widget(Home(name="Home"))
         self.sm.add_widget(Page3(name="Page3"))
         self.rv = self.sm.get_screen('Page3').rv

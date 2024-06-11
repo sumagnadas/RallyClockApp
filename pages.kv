@@ -3,7 +3,7 @@
 
 <RallyRow>:
     car: car
-    carno : car.text
+    carno: car.text
     tm:tm
     orientation: 'horizontal'
     padding:10,10
@@ -80,3 +80,76 @@
             text: 'Capture'
             on_press: root.on_capture(now.now().time())
 
+<StageSel>:
+    day_no:day.text
+    day: day.values
+    stage: stage
+    canvas.before:
+        Color:
+            rgb: 1,1,1
+        Rectangle:
+            size: self.size
+    BoxLayout:
+        size_hint: 1,1
+        orientation: "vertical"
+        padding: 10, 10
+        spacing: 10
+        BoxLayout:
+            size_hint_y: 0.1
+            background_color: 0,0,0,1
+            orientation:'horizontal'
+            RoundedButton
+                size_hint_x: 0.2
+                color: 0,0,0
+                text: 'back'
+                on_press: app.sm.current = "Home"
+                #on_release: app.on_release(self, 6)
+            TimeLabel:
+                size_hint_x:0.5
+                color: 0,0,0
+            Label:
+                size_hint_x: 0.3
+                color: 0,0,0
+                text: "Battery"
+        BoxLayout:
+            orientation: "horizontal"
+            size_hint_y: 0.15
+            Label:
+                size_hint_x: 0.5
+                text: "Present Task"
+                color: 0,0,0
+            Spinner:
+                id: stage
+                text: 'Arrival in Special Stage'
+                size_hint_x:0.5
+                values: 'Arrival in Special Stage', 'Start of Special Stage', 'Finish of Special Stage','Rally Start of the day', 'Rally Finish of the day','Service IN', 'Service OUT', 'Regroup IN', 'Regroup OUT'
+                on_text: print(f'{self.text}')
+        BoxLayout:
+            orientation: "horizontal"
+            size_hint_y: 0.15
+            Label:
+                size_hint_x: 0.5
+                text: "Rally Day"
+                color: 0,0,0
+            Spinner:
+                id: day
+                text: '1'
+                size_hint_x:0.5
+                values: '1','2','3','4','5'
+                on_text: print(f'{self.text}')
+        BoxLayout:
+            orientation: "horizontal"
+            size_hint_y: 0.15
+            Label:
+                size_hint_x: 0.5
+                text: "Rally Day"
+                color: 0,0,0
+            Spinner:
+                id: day
+                text: '1'
+                size_hint_x:0.5
+                values: '1','2','3','4','5'
+                on_text: print(f'{self.text}')
+        Label:
+            text: 'Placeholder'
+            color: 0,0,0

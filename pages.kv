@@ -15,6 +15,7 @@
         size: self.size
         on_text_validate: root.on_enter()
     TimeLabel:
+        size_hint_x: 0.8
         color: 0, 0, 0
         id: tm
         update:False
@@ -50,8 +51,9 @@
             size: self.size
     size:root.size
     BoxLayout:
-        orientation: 'vertical'
         size: self.parent.size
+        size_hint: None, None
+        orientation: 'vertical'
         padding: 10, 10
         spacing: 10
         BoxLayout:
@@ -73,7 +75,6 @@
                 text: "Battery"
         RV:
             id: rv
-            size_hint_y: 0.8
         RoundedButton:
             size_hint_y: 0.1
             color: 0,0,0
@@ -81,21 +82,27 @@
             on_press: root.on_capture(now.now().time())
 
 <StageSel>:
+    extra_drop: extra_drop
+    extra_text: extra_text
     day_no:day.text
     day: day.values
-    stage: stage
+    extra: extra
+    box: box
     canvas.before:
         Color:
             rgb: 1,1,1
         Rectangle:
             size: self.size
+    size:root.size
     BoxLayout:
-        size_hint: 1,1
+        id: box
+        size: self.parent.size
+        size_hint: None, None
         orientation: "vertical"
         padding: 10, 10
         spacing: 10
         BoxLayout:
-            size_hint_y: 0.1
+            size_hint_y: 0.05
             background_color: 0,0,0,1
             orientation:'horizontal'
             RoundedButton
@@ -115,41 +122,50 @@
             orientation: "horizontal"
             size_hint_y: 0.15
             Label:
-                size_hint_x: 0.5
+                size_hint_x: 0.4
                 text: "Present Task"
                 color: 0,0,0
             Spinner:
                 id: stage
                 text: 'Arrival in Special Stage'
-                size_hint_x:0.5
+                size_hint_x:0.6
                 values: 'Arrival in Special Stage', 'Start of Special Stage', 'Finish of Special Stage','Rally Start of the day', 'Rally Finish of the day','Service IN', 'Service OUT', 'Regroup IN', 'Regroup OUT'
-                on_text: print(f'{self.text}')
+                on_text: root.on_stage(self.text)
         BoxLayout:
             orientation: "horizontal"
             size_hint_y: 0.15
             Label:
-                size_hint_x: 0.5
+                size_hint_x: 0.4
                 text: "Rally Day"
                 color: 0,0,0
             Spinner:
                 id: day
                 text: '1'
-                size_hint_x:0.5
+                size_hint_x:0.6
                 values: '1','2','3','4','5'
-                on_text: print(f'{self.text}')
+                on_text: root.but_text_ch(s1=self.text)
         BoxLayout:
+            id: extra
             orientation: "horizontal"
             size_hint_y: 0.15
             Label:
-                size_hint_x: 0.5
-                text: "Rally Day"
+                id: extra_text
+                size_hint_x: 0.4
+                text: "Stage No."
                 color: 0,0,0
             Spinner:
-                id: day
+                id: extra_drop
                 text: '1'
-                size_hint_x:0.5
-                values: '1','2','3','4','5'
-                on_text: print(f'{self.text}')
+                size_hint_x:0.6
+                values: '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30'
+                on_text: root.but_text_ch(s3=self.text)
         Label:
-            text: 'Placeholder'
+            canvas.before:
+                Color:
+                    rgb: 1,1,1
+                Rectangle:
+                    size: self.size
+            size_hint_x: 1
+            size_hint_y: 0.5 if root.show_stage else 0.65
+            text: ''
             color: 0,0,0

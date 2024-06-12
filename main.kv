@@ -1,7 +1,7 @@
 #: kivy 2.0.0
 
 <Home>:
-    #time: tm
+    loc_but:loc_but
     canvas.before:
         Color:
             rgb: 1,1,1
@@ -36,7 +36,7 @@
             color: 0,0,0
             size_hint_y: None
             height: root.height * 0.15
-            text: "button 3"
+            text: "Clock - Stage Finish"
             on_press: root.on_b3(self)
             on_release: app.on_release(self, 2)
         GridLayout:
@@ -51,8 +51,9 @@
                 on_press: root.on_b4(self)
                 on_release: app.on_release(self, 3)
             RoundedButton:
+                id: loc_but
                 color: 0,0,0
-                text: 'button 4b'
+                text: 'Location\nD1-SA-1'
                 on_press: root.on_b5(self)
                 on_release: app.on_release(self, 4)
             RoundedButton:

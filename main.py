@@ -8,8 +8,9 @@ class MainApp(App):
     sm = ScreenManager(transition=NoTransition())
 
     def build(self):
-        #self.settings_cls = SetingsWI
-        self.sm.add_widget(Home(name="Home"))
+        home = Home(name="Home")
+        self.loc_but = home.loc_but
+        self.sm.add_widget(home)
         self.sm.add_widget(Page3(name="Page3"))
         self.sm.add_widget(StageSel(name="StageSel"))
         self.rv = self.sm.get_screen('Page3').rv

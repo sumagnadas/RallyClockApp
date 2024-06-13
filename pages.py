@@ -23,6 +23,9 @@ class LogRow(RecycleDataViewBehavior, BoxLayout):
     type = StringProperty("Test")
     row = ObjectProperty(None)
     row_carno = StringProperty(None)
+    def refresh_view_attrs(self, rv, index, data):
+        print(data)
+        return super().refresh_view_attrs(rv, index, data)
 
 
 class NumericInput(TextInput):
@@ -45,10 +48,10 @@ class RallyRow(RecycleDataViewBehavior, BoxLayout):
             # As an alternate method of assignment
         data_rv = rv.data
         self.row_index = len(data_rv) - data_rv.index(data)
-        print(self.row_index)
         self.index = data_rv.index(data)
         if not self.row and hasattr(self, 'index'):
             self.row = EventLog.select().where(EventLog.type=="Finish" and EventLog.id==self.row_index).get()
+            self.prev_carno = str(self.row.carno)
         return super(RallyRow, self).refresh_view_attrs(
             rv, index, data)
     def on_enter(self):
@@ -56,8 +59,10 @@ class RallyRow(RecycleDataViewBehavior, BoxLayout):
         rv = app.rv
         log = app.sm.get_screen("Log")
         if not EventLog.select().where(EventLog.type=="Finish" and EventLog.carno==self.carno).count():
+            print(rv.data)
+            self.index = rv.data.index({'time': self.time, 'carno':int(self.prev_carno)})
             rv.data[self.index]['carno'] = self.carno
-            new_row_index = len(rv.data) - rv.data.index({'time': self.time, 'carno':self.carno})
+            new_row_index = len(rv.data) - self.index
             if(new_row_index != self.row_index):
                 self.row_index = new_row_index
                 self.row = self.row = EventLog.select().where(EventLog.type=="Finish" and EventLog.id==self.row_index).get()
@@ -204,7 +209,7 @@ class Page3(Screen):
         print(time)
         row = EventLog.create(carno=0,type="Finish",date=time.date(), time=time.time())
         row.save()
-        self.rv.data.insert(0, {'time': str(time.time()),'carno': 0, 'index': len(self.rv.data)})
+        self.rv.data.insert(0, {'time': str(time.time()),'carno': '0'})
 
 class ViewLog(Screen):
     rv = ObjectProperty(None)
@@ -229,8 +234,10 @@ class ViewLog(Screen):
                     print(row.time)
                     print(i['row'])
                     index = self.rv.data.index(i)
+                    print(self.rv.data[index])
                     self.rv.data[index]['time'] = str(row.time)
                     self.rv.data[index]['date'] = str(row.date)
                     self.rv.data[index]['carno'] = str(row.carno)
                     self.rv.data[index]['type'] = row.type
+                    print(self.rv.data[index])
         self.prev_log = new_log

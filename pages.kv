@@ -4,7 +4,6 @@
 <RallyRow>:
     car: car
     carno: car.text
-    tm:tm
     orientation: 'horizontal'
     padding:10,10
     spacing: 10
@@ -22,7 +21,6 @@
         time:root.time
 
 <RV>:
-    viewclass: 'RallyRow'
     RecycleBoxLayout:
         default_size: None, dp(56)
         default_size_hint: 1, None
@@ -74,12 +72,13 @@
                 color: 0,0,0
                 text: "Battery"
         RV:
+            viewclass: 'RallyRow'
             id: rv
         RoundedButton:
             size_hint_y: 0.1
             color: 0,0,0
             text: 'Capture'
-            on_press: root.on_capture(now.now().time())
+            on_press: root.on_capture(now.now())
 
 <StageSel>:
     extra_drop: extra_drop
@@ -169,3 +168,57 @@
             size_hint_y: 0.5 if root.show_stage else 0.65
             text: ''
             color: 0,0,0
+
+<LogRow>:
+    orientation: 'horizontal'
+    padding:10,10
+    spacing: 10
+    Label:
+        size_hint_x: 0.2
+        color: 0, 0, 0
+        text:root.type
+    Label:
+        size_hint_x: 0.3
+        color: 0, 0, 0
+        text:root.date
+    Label:
+        size_hint_x: 0.2
+        color: 0, 0, 0
+        text:root.carno
+    Label:
+        size_hint_x: 0.3
+        color: 0, 0, 0
+        text:root.time
+<ViewLog>:
+    rv:rv
+    canvas.before:
+        Color:
+            rgb: 1,1,1
+        Rectangle:
+            size: self.size
+    BoxLayout:
+        size: self.parent.size
+        size_hint: None, None
+        orientation: "vertical"
+        padding: 10, 10
+        spacing: 10
+        BoxLayout:
+            size_hint_y: 0.05
+            background_color: 0,0,0,1
+            orientation:'horizontal'
+            RoundedButton
+                size_hint_x: 0.2
+                color: 0,0,0
+                text: 'back'
+                on_press: app.sm.current = "Home"
+                #on_release: app.on_release(self, 6)
+            TimeLabel:
+                size_hint_x:0.5
+                color: 0,0,0
+            Label:
+                size_hint_x: 0.3
+                color: 0,0,0
+                text: "Battery"
+        RV:
+            id:rv
+            viewclass: 'LogRow'

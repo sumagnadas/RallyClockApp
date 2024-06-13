@@ -72,7 +72,7 @@ osx.kivy_version = 1.9.1
 #
 # Android specific
 android.api = 31
-android.archs = x86_64
+android.archs = x86_64, arm64-v8a, armeabi-v7a
 #android.minapi = 21
 #android.sdk = 21
 #android.ndk = 25b

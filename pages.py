@@ -11,13 +11,19 @@ from kivy.uix.recycleview.views import RecycleDataViewBehavior
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.textinput import TextInput
 from kivy.graphics import Color, RoundedRectangle
-from re import sub, DOTALL
-
-pattern = r'(D[1-9]\-)[A-Z]{2}(\-[0-9])'
-repl = r'\1S\2'
-
+from re import sub
 from datetime import datetime
+from models import EventLog
+
 Builder.load_file("pages.kv")
+class LogRow(RecycleDataViewBehavior, BoxLayout):
+    time = StringProperty("00:00:00")
+    carno = StringProperty("0")
+    date = StringProperty("01-01-2004")
+    type = StringProperty("Test")
+    row = ObjectProperty(None)
+    row_carno = StringProperty(None)
+
 
 class NumericInput(TextInput):
     def __init__(self, **kwargs):
@@ -27,22 +33,47 @@ class NumericInput(TextInput):
     def insert_text(self, substring: str, from_undo=False):
         s = sub('[^0-9]','',substring)
         return super(NumericInput, self).insert_text(s,from_undo=from_undo)
+
 class RallyRow(RecycleDataViewBehavior, BoxLayout):
     car = ObjectProperty(None)
     time = StringProperty("00:00:00")
     carno = ObjectProperty(None)
+    prev_carno = "0"
+    row = None
     def refresh_view_attrs(self, rv, index, data):
         ''' Catch and handle the view changes '''
-        self.index = index# As an alternate method of assignment
+            # As an alternate method of assignment
+        data_rv = rv.data
+        self.row_index = len(data_rv) - data_rv.index(data)
+        print(self.row_index)
+        self.index = data_rv.index(data)
+        if not self.row and hasattr(self, 'index'):
+            self.row = EventLog.select().where(EventLog.type=="Finish" and EventLog.id==self.row_index).get()
         return super(RallyRow, self).refresh_view_attrs(
             rv, index, data)
     def on_enter(self):
-        rv = App.get_running_app().rv
-        rv.data[self.index]['carno'] = self.carno
+        app = App.get_running_app()
+        rv = app.rv
+        log = app.sm.get_screen("Log")
+        if not EventLog.select().where(EventLog.type=="Finish" and EventLog.carno==self.carno).count():
+            rv.data[self.index]['carno'] = self.carno
+            new_row_index = len(rv.data) - rv.data.index({'time': self.time, 'carno':self.carno})
+            if(new_row_index != self.row_index):
+                self.row_index = new_row_index
+                self.row = self.row = EventLog.select().where(EventLog.type=="Finish" and EventLog.id==self.row_index).get()
+            self.row.carno = self.carno
+            self.row.save()
+            print(self.row_index)
+            self.prev_carno = self.carno
+            log.reload(row=self.row)
+        else:
+            self.carno = 0
+            print("Already present. please enter another car no.")
 class RV(RecycleView):
     def __init__(self, **kwargs):
         super(RV, self).__init__(**kwargs)
         self.data = list()
+
 class TimeLabel(Label):
     time = StringProperty()
     update = BooleanProperty(True)
@@ -63,8 +94,10 @@ class TimeLabel(Label):
 
     def on_time(self, instance, value):
         self.text = self.time
+
 class RoundedButton(Button):
     pass
+
 class Home(Screen):
     loc_but = ObjectProperty(None)
     def _btnchg(self, obj,i):
@@ -83,9 +116,9 @@ class Home(Screen):
         self.manager.current = "Page3"
         self._btnchg(obj, 2)
     def on_b4(self, obj):
-        print("button4a")
+        self.manager.get_screen("Log").reload()
+        self.manager.current = "Log"
         self._btnchg(obj, 3)
-        print(obj)
     def on_b5(self, obj):
         self.manager.current = "StageSel"
         self._btnchg(obj, 4)
@@ -97,8 +130,10 @@ class Home(Screen):
         print("settings")
         self._btnchg(obj, 6)
         print(obj)
+
 class SetPage(SettingsWithNoMenu):
     pass
+
 class StageSel(Screen):
     day_no = ObjectProperty(None)
     show_stage = BooleanProperty(True)
@@ -156,12 +191,46 @@ class StageSel(Screen):
             elif self.extra in self.box.children and not app.loc_but.text[-1].isnumeric():
                 app.loc_but.text = app.loc_but.text + f"-{self.extra_drop.text}"
 
-
     def on_no(self, value):
         self.but_text_ch(s3=value)
 
 class Page3(Screen):
     rv = ObjectProperty(None)
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        for i in EventLog.select().where(EventLog.type=="Finish"):
+            self.rv.data.insert(0,{'time':str(i.time), 'carno':i.carno})
     def on_capture(self, time):
         print(time)
-        self.rv.data.append({'time': str(time),'carno': 0})
+        row = EventLog.create(carno=0,type="Finish",date=time.date(), time=time.time())
+        row.save()
+        self.rv.data.insert(0, {'time': str(time.time()),'carno': 0, 'index': len(self.rv.data)})
+
+class ViewLog(Screen):
+    rv = ObjectProperty(None)
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        for i in EventLog.select():
+            self.rv.data.insert(0,{'time':str(i.time), 'carno':str(i.carno), 'date':str(i.date), 'type':i.type, 'row':i})
+        self.prev_log = EventLog.select()
+
+    def reload(self, row = None):
+        new_log = EventLog.select()
+        if self.prev_log:
+            for i in new_log:
+                if i not in self.prev_log:
+                    self.rv.data.insert(0,{'time':str(i.time), 'carno':str(i.carno), 'date':str(i.date), 'type':i.type, 'row':i})
+        else:
+            for i in new_log:
+                self.rv.data.insert(0,{'time':str(i.time), 'carno':str(i.carno), 'date':str(i.date), 'type':i.type, 'row':i})
+        if row:
+            for i in self.rv.data:
+                if row == i['row']:
+                    print(row.time)
+                    print(i['row'])
+                    index = self.rv.data.index(i)
+                    self.rv.data[index]['time'] = str(row.time)
+                    self.rv.data[index]['date'] = str(row.date)
+                    self.rv.data[index]['carno'] = str(row.carno)
+                    self.rv.data[index]['type'] = row.type
+        self.prev_log = new_log

@@ -1,5 +1,5 @@
 from kivy.app import App
-from pages import Home, Page3, StageSel
+from pages import Home, Page3, StageSel, ViewLog
 from kivy.uix.screenmanager import ScreenManager,NoTransition
 
 class MainApp(App):
@@ -13,8 +13,10 @@ class MainApp(App):
         self.sm.add_widget(home)
         self.sm.add_widget(Page3(name="Page3"))
         self.sm.add_widget(StageSel(name="StageSel"))
+        self.sm.add_widget(ViewLog(name="Log"))
         self.rv = self.sm.get_screen('Page3').rv
         return self.sm
+
     def on_release(self, obj, i):
         obj.canvas.remove(self._color[i])
         obj.canvas.remove(self._rect[i])

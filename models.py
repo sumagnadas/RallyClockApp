@@ -3,6 +3,8 @@ from peewee import CharField, IntegerField, TimeField, DateField, SqliteDatabase
 db = SqliteDatabase("logfile.db")
 
 class EventLog(Model):
+    '''Basic Structure of the logfile database table'''
+
     carno = IntegerField()
     type = CharField()
     date = DateField()
@@ -11,5 +13,5 @@ class EventLog(Model):
     class Meta:
         database = db
 
-if db.get_tables() == []:
+if db.get_tables() == []:# if the table doesn't exist, then create one
     EventLog.create_table()

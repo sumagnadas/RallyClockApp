@@ -1,3 +1,9 @@
+'''
+This script is the main script which is run when the app is opened
+It starts the main thread as well as setup the app for running
+
+'''
+
 from kivy.app import App
 from pages import Home, Page3, StageSel, ViewLog
 from kivy.uix.screenmanager import ScreenManager,NoTransition

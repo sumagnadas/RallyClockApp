@@ -1,3 +1,8 @@
+'''
+This module contains the table model for the logfile as well as
+connects to the database.
+'''
+
 from peewee import CharField, IntegerField, TimeField, DateField, SqliteDatabase, Model
 
 db = SqliteDatabase("logfile.db")

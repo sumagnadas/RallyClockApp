@@ -1,45 +1,6 @@
 #: kivy 2.0.0
 #:import now datetime.datetime
 
-<RallyRow>:
-    car: car
-    carno: car.text
-    orientation: 'horizontal'
-    padding:10,10
-    spacing: 10
-    NumericInput:
-        id: car
-        text:root.carno
-        size_hint_x: 0.2
-        size: self.size
-        on_text_validate: root.on_enter()
-    TimeLabel:
-        size_hint_x: 0.8
-        color: 0, 0, 0
-        id: tm
-        update:False
-        time:root.time
-
-<RV>:
-    RecycleBoxLayout:
-        default_size: None, dp(56)
-        default_size_hint: 1, None
-        size_hint_y: None
-        height: self.minimum_height
-        orientation: 'vertical'
-
-<RoundedButton>
-	background_color: 0,0,0,0
-    background_normal: ''
-    background_down:''
-    canvas.before:
-        Color:
-            rgb: 200/255, 200/255, 200/255
-        RoundedRectangle:
-            pos: self.pos
-            size: self.size
-            radius: [10,]
-
 <Page3>:
     rv:rv
     canvas.before:
@@ -168,26 +129,6 @@
             text: ''
             color: 0,0,0
 
-<LogRow>:
-    orientation: 'horizontal'
-    padding:10,10
-    spacing: 10
-    Label:
-        size_hint_x: 0.2
-        color: 0, 0, 0
-        text:root.type
-    Label:
-        size_hint_x: 0.3
-        color: 0, 0, 0
-        text:root.date
-    Label:
-        size_hint_x: 0.2
-        color: 0, 0, 0
-        text:root.carno
-    Label:
-        size_hint_x: 0.3
-        color: 0, 0, 0
-        text:root.time
 <ViewLog>:
     rv:rv
     canvas.before:

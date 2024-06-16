@@ -8,19 +8,12 @@
     Label:
         size_hint_x: 0.2
         color: 0, 0, 0
-        text:root.type
-    Label:
-        size_hint_x: 0.3
-        color: 0, 0, 0
-        text:root.date
-    Label:
-        size_hint_x: 0.2
-        color: 0, 0, 0
         text:root.carno
-    Label:
+    TimeLabel:
         size_hint_x: 0.3
         color: 0, 0, 0
-        text:root.time
+        update:False
+        tm:root.tm
 <RallyRow>:
     car: car
     carno: car.text
@@ -38,7 +31,7 @@
         color: 0, 0, 0
         id: tm
         update:False
-        time:root.time
+        tm:root.tm
 
 <RV>:
     RecycleBoxLayout:

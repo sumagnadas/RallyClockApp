@@ -2,6 +2,8 @@
 
 <Home>:
     loc_but:loc_but
+    tm1: tm1
+    tm2: tm2
     canvas.before:
         Color:
             rgb: 1,1,1
@@ -10,7 +12,7 @@
     size: root.size
     BoxLayout:
         orientation: 'vertical'
-        size: self.parent.size
+        #size: self.parent.size
         padding: 10, 10
         spacing: 10
         Label:
@@ -18,33 +20,14 @@
             color: 0,0,0
             text: 'Home'
         RoundedButton:
-            padding:10,10
             color: 0,0,0
-            height: root.height * 0.15
-            size_hint_y: None
-            text: "button 1"
-            on_press: root.on_b1(self)
-            on_release: app.on_release(self,0)
-        RoundedButton:
-            color: 0,0,0
-            height: root.height * 0.15
-            size_hint_y: None
-            text: "button 2"
-            on_press: root.on_b2(self)
-            on_release: app.on_release(self, 1)
-        RoundedButton:
-            color: 0,0,0
-            size_hint_y: None
-            height: root.height * 0.15
-            text: "Clock - Stage Finish"
+            size_hint_y: 0.15
+            text: "Clock Capture"
             on_press: root.on_b3(self)
             on_release: app.on_release(self, 2)
-        GridLayout:
-            row_default_height: root.height * 0.15
-            row_force_default: True
-            cols:3
-            rows:1
-            spacing: 10, 0
+        BoxLayout:
+            size_hint_y: 0.15
+            spacing: 10
             RoundedButton:
                 color: 0,0,0
                 text: 'Log'
@@ -53,7 +36,7 @@
             RoundedButton:
                 id: loc_but
                 color: 0,0,0
-                text: 'Location\nD1-SA-1'
+                text: 'Location\nD1-TC-1'
                 on_press: root.on_b5(self)
                 on_release: app.on_release(self, 4)
             RoundedButton:
@@ -61,14 +44,20 @@
                 text: 'button 4c'
                 on_press: root.on_b6(self)
                 on_release: app.on_release(self, 5)
-        Widget:
-            canvas:
-                Color:
-                    rgba: 0,0,0,0
-                Rectangle:
-                    pos: self.pos
-                    size: self.size
+        Label:
+            id: tm1
+            size_hint_y:0.2
+            color: 0,0,0
+            font_size: 60
+            text: "11:23"
+        Label:
+            id: tm2
+            font_size: 90
+            size_hint_y: 0.3
+            color: 0,0,0
+            text: "56"
         BoxLayout:
+            size_hint_y:0.15
             background_color: 0,0,0,1
             orientation:'horizontal'
             RoundedButton
@@ -77,11 +66,9 @@
                 text: 'settings'
                 on_press: root.on_set(self)
                 on_release: app.on_release(self, 6)
-            TimeLabel:
-                #id: tm
+            Widget:
                 size_hint_x:0.35
                 color: 0,0,0
-                #text: app.time
             Label:
                 id: bat
                 size_hint_x: 0.4

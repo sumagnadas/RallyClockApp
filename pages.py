@@ -3,21 +3,27 @@ This script contains the different screens/views which
 are shown to user as they interact with the app
 '''
 
-from kivy.base import Builder
 from kivy.app import App
+from kivy.base import Builder
+from kivy.clock import Clock
+from kivy.properties import ObjectProperty, BooleanProperty
 from kivy.uix.screenmanager import Screen
 from kivy.uix.settings import SettingsWithNoMenu
-from kivy.properties import ObjectProperty, BooleanProperty
 from kivy.graphics import Color, RoundedRectangle
 from models import EventLog
 import base
+from datetime import datetime,time
 
 Builder.load_file("pages.kv")
 
 class Home(Screen):
     '''Class for the Home page which is shown on opening the app'''
-
+    tm1 = ObjectProperty(None)
+    tm2 = ObjectProperty(None)
     loc_but = ObjectProperty(None)
+    def __init__(self, **kw):
+        Clock.schedule_interval(self.update_clock, 0.1)
+        super().__init__(**kw)
 
     def _btnchg(self, obj,i):
         '''Changes the color of the RoundedButton when pressed(due to custom layout, there is no appearance change of button when it is pressed by the user)'''
@@ -25,16 +31,6 @@ class Home(Screen):
         with obj.canvas:
             App.get_running_app()._color[i] = Color(200/255, 200/255, 200/255,0.9)
             App.get_running_app()._rect[i] = RoundedRectangle(pos=obj.pos, size=obj.size)
-
-    def on_b1(self, obj):
-        print("button1")
-        self._btnchg(obj, 0)
-        print(obj)
-
-    def on_b2(self, obj):
-        print("button2")
-        self._btnchg(obj, 1)
-        print(obj)
 
     def on_b3(self, obj):
         '''Goes to Page3 Screen'''
@@ -64,6 +60,11 @@ class Home(Screen):
         self._btnchg(obj, 6)
         print(obj)
 
+    def update_clock(self, dt):
+        time = datetime.now()
+        self.tm1.text = time.strftime("%H:%M")
+        self.tm2.text = time.strftime("%S")
+
 class SetPage(SettingsWithNoMenu):
     pass
 
@@ -86,7 +87,7 @@ class StageSel(Screen):
         s = s[0][0] + s[1][0]
 
         list1 = ("Rally Start of the day" , "Rally Finish of the day")
-        list2 = ("Start of Special Stage", "Arrival in Special Stage", "Finish of Special Stage")
+        list2 = ("Start of Special Stage", "Arrival in Special Stage", "Finish of Special Stage","Time Control IN")
         list3 = ('Service IN', 'Service OUT', 'Regroup IN', 'Regroup OUT')
 
         # Dont show stage no./regroup no. selection widget if the stage is "Rally Start" or "Rally Finish"
@@ -102,8 +103,9 @@ class StageSel(Screen):
             # Keeping the text format of the button on the home screen similar to the NRS app
             if value in list2:
                 # button text format stuff
-                s = value.split(" ")
-                s = "S" + s[0][0]
+                if value != 'Time Control IN':
+                    s = value.split(" ")
+                    s = "S" + s[0][0]
 
                 # Change the dropdown label text and dropdown values according to the value selected
                 self.stg_sel_text.text = "Stage No."
@@ -165,14 +167,14 @@ class Page3(Screen):
 
         super().__init__(**kw)
         for i in EventLog.select().where(EventLog.type=="Finish"):
-            self.rv.data.insert(0,{'time':str(i.time), 'carno':str(i.carno)})
+            self.rv.data.insert(0,{'tm':i.time, 'carno':str(i.carno)})
 
     def on_capture(self, time):
         '''Adds the new row to the RecycleView(at the top) and to the logfile database(at the end)'''
 
         row = EventLog.insert(carno=0,type="Finish",date=time.date(), time=time.time())
         row.execute()
-        self.rv.data.insert(0, {'time': str(time.time()),'carno': '0'})
+        self.rv.data.insert(0, {'tm': time.time(),'carno': '0'})
         self.manager.get_screen("Log").reload()
 
 class ViewLog(Screen):
@@ -183,7 +185,7 @@ class ViewLog(Screen):
         # Adds all the events present in the logfile
         log = EventLog.select()
         for i in log:
-            self.rv.data.insert(0,{'time':str(i.time), 'carno':str(i.carno), 'date':str(i.date), 'type':i.type, 'row':i})
+            self.rv.data.insert(0,{'tm':i.time, 'carno':str(i.carno), 'date':str(i.date), 'type':i.type, 'row':i})
         self.prev_log = log if log.count() else None
 
     def reload(self, row = None):
@@ -195,11 +197,11 @@ class ViewLog(Screen):
         if self.prev_log:# if there were data in the logfile
             for i in new_log:
                 if i not in self.prev_log:
-                    self.rv.data.insert(0,{'time':str(i.time), 'carno':str(i.carno), 'date':str(i.date), 'type':i.type, 'row':i})
+                    self.rv.data.insert(0,{'tm':i.time, 'carno':str(i.carno), 'date':str(i.date), 'type':i.type, 'row':i})
                     print(self.rv.data)
         else:# if there were no data in the logfile and new data was just added
             for i in new_log:
-                self.rv.data.insert(0,{'time':str(i.time), 'carno':str(i.carno), 'date':str(i.date), 'type':i.type, 'row':i})
+                self.rv.data.insert(0,{'tm':i.time, 'carno':str(i.carno), 'date':str(i.date), 'type':i.type, 'row':i})
                 print(self.rv.data)
 
         # this is added for change in any kind of data in a pre-existing record
@@ -207,5 +209,5 @@ class ViewLog(Screen):
             for i in self.rv.data:
                 if row == i['row']:
                     index = self.rv.data.index(i)
-                    self.rv.data[index]= {'time': str(row.time), 'date': str(row.date), 'carno': str(row.carno), 'type': row.type, 'row': i['row']}
+                    self.rv.data[index]= {'tm': row.time, 'date': str(row.date), 'carno': str(row.carno), 'type': row.type, 'row': i['row']}
         self.prev_log = new_log

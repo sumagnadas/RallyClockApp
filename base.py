@@ -6,7 +6,7 @@ one or more of the screens shown in the app
 from kivy.app import App
 from kivy.base import Builder
 from kivy.clock import Clock
-from kivy.properties import StringProperty, ObjectProperty, BooleanProperty, NumericProperty
+from kivy.properties import StringProperty, ObjectProperty, BooleanProperty, NumericProperty, Property
 from kivy.uix.recycleview import RecycleView
 from kivy.uix.recycleview.views import RecycleDataViewBehavior
 from kivy.uix.boxlayout import BoxLayout
@@ -15,7 +15,7 @@ from kivy.uix.button import Button
 from kivy.uix.label import Label
 
 from re import sub
-from datetime import datetime
+from datetime import datetime,time
 from models import EventLog
 
 Builder.load_file('base.kv')
@@ -23,7 +23,7 @@ Builder.load_file('base.kv')
 class LogRow(RecycleDataViewBehavior, BoxLayout):
     '''Class which is used as the row for displaying the events in the logfile'''
 
-    time = StringProperty("00:00:00")
+    tm = ObjectProperty(time(0,0,0))
     carno = StringProperty("0")
     date = StringProperty("01-01-2004")
     type = StringProperty("Test")
@@ -43,7 +43,7 @@ class NumericInput(TextInput):
 class RallyRow(RecycleDataViewBehavior, BoxLayout):
     ''' Class which is used as the row for showing data in the Finish data capture list'''
 
-    time = StringProperty("00:00:00")
+    tm = ObjectProperty(time(0,0,0))
     carno = StringProperty("0")
     prev_carno = "0"
     row = None
@@ -59,7 +59,7 @@ class RallyRow(RecycleDataViewBehavior, BoxLayout):
 
         if not self.row:
             # store the row for updating data without searching for the row in database every time
-            self.row = EventLog.select().where(EventLog.type=="Finish" and EventLog.time==data['time']).get()
+            self.row = EventLog.select().where(EventLog.type=="Finish" and EventLog.id==self.row_id).get()
 
             # set the prev_carno for getting the NumericInput back if user entered duplicate entry and also for finding the index from the RecycleView
             self.prev_carno = str(self.row.carno)
@@ -97,7 +97,7 @@ class RallyRow(RecycleDataViewBehavior, BoxLayout):
 
 class TimeLabel(Label):
     '''Class for Labels showing only time'''
-    time = StringProperty()
+    tm = ObjectProperty(time(0,0,0))
     update = BooleanProperty(True) # Checks if the time in the Label is to be updated or not
     def __init__(self, **kwargs):
         self.update = self.update if not 'update' in kwargs.keys() else kwargs['update']
@@ -113,15 +113,14 @@ class TimeLabel(Label):
             Clock.schedule_interval(self.update_clock, 1/60)
         else:
             self.event.cancel()
-            self.time = '00:00:00'
+            self.time = time(0,0,0)
 
     def update_clock(self, dt):
       '''Sets the Label text to the current time if the update property is true'''
-      self.text = str(datetime.now().time())
-      self.time = self.text
+      self.tm = datetime.now().time()
 
-    def on_time(self, instance, value):
-        self.text = self.time
+    def on_tm(self, instance, value):
+        self.text = self.tm.strftime("%H:%M:%S")
 
 class RoundedButton(Button):
     '''Class for Buttons with rounded corner (styling in kv file)'''

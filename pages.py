@@ -12,9 +12,18 @@ from kivy.uix.settings import SettingsWithNoMenu
 from kivy.graphics import Color, RoundedRectangle
 from models import EventLog
 import base
-from datetime import datetime,time
+from datetime import datetime
+from configparser import ConfigParser
 
 Builder.load_file("pages.kv")
+settings = ConfigParser()
+settings.read("settings.ini")
+if settings.read("settings.ini") == []:
+    settings['SETTINGS'] = {'stage': "Time Control In",
+                            'day': '1',
+                            'stg_no': '1'}
+    with open('settings.ini','w') as f:
+            settings.write(f)
 
 class Home(Screen):
     '''Class for the Home page which is shown on opening the app'''
@@ -71,11 +80,19 @@ class SetPage(SettingsWithNoMenu):
 class StageSel(Screen):
     '''Class for Stage, Rally Day selection Screen'''
 
+    day = ObjectProperty(None)
     show_stg_sel = BooleanProperty(True) # Whether to show the dropdown for Stage No. Selection or not
     stg_sel = ObjectProperty(None) # Layout/Widget for Stage No. Selection dropdown
     stg_sel_drop = ObjectProperty(None) # Dropdown Widget for Stage No. Selection dropdown
     stg_sel_text = ObjectProperty(None)  # Text for Stage No. Selection dropdown
     box = ObjectProperty(None) # Layout/Widget Containing all the children widgets for this screen
+
+    def __init__(self, **kw):
+        super().__init__(**kw)
+
+        self.stage.text = settings['SETTINGS']['stage']
+        self.day.text = settings['SETTINGS']['day']
+        self.stg_sel_drop.text = settings['SETTINGS']['stg_no']
 
     def on_stage(self, value):
         '''
@@ -121,6 +138,10 @@ class StageSel(Screen):
                 self.stg_sel_drop.values = values
                 self.stg_sel_drop.text = values[0]
 
+        settings['SETTINGS']['stage'] = value
+        with open('settings.ini','w') as f:
+            settings.write(f)
+
         # Change button text format for the middle portion
         self.but_text_ch(curr_stg=s)
 
@@ -137,6 +158,7 @@ class StageSel(Screen):
 
         # if day no. has changed
         if day_no:
+            settings['SETTINGS']['day'] = day_no
             app.loc_but.text = string[:10] + day_no + string[11:]
 
         # if current stage has changed
@@ -145,8 +167,13 @@ class StageSel(Screen):
 
         # if stage no./regroup no has changed (not present when at stage "Rally Start" or "Rally Finish")
         elif stg_no:
+            settings['SETTINGS']['stg_no'] = stg_no
             string = string[:-1] + stg_no
             app.loc_but.text = string
+
+        if not curr_stg:
+            with open('settings.ini','w') as f:
+                settings.write(f)
 
         # if the stage no/regroup no selection widget wasnt present but the button text still has stage no., this will remove it.
         # on the other hand, if the stage no/regroup no selection widget is present but the button text doesnt have stage no., this will add it

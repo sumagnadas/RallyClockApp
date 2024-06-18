@@ -30,6 +30,7 @@ class Home(Screen):
     tm1 = ObjectProperty(None)
     tm2 = ObjectProperty(None)
     loc_but = ObjectProperty(None)
+
     def __init__(self, **kw):
         Clock.schedule_interval(self.update_clock, 0.1)
         super().__init__(**kw)
@@ -56,13 +57,17 @@ class Home(Screen):
 
     def on_b5(self, obj):
         '''Goes to Stage Selection Screen'''
+
         self.manager.current = "StageSel"
         self._btnchg(obj, 4)
 
     def on_b6(self, obj):
-        print("button4c")
+        '''
+        Uploads the data to the Google Sheets where itcan be downloaded from and post-processed
+        '''
+
+        EventLog.upload()
         self._btnchg(obj, 5)
-        print(obj)
 
     def on_set(self, obj):
         print("settings")
@@ -193,13 +198,20 @@ class Page3(Screen):
         '''Initial input of the records to the RecycleView from the log file'''
 
         super().__init__(**kw)
-        for i in EventLog.select().where(EventLog.type=="Finish"):
+        for i in EventLog.select():
             self.rv.data.insert(0,{'tm':i.time, 'carno':str(i.carno)})
 
     def on_capture(self, time):
         '''Adds the new row to the RecycleView(at the top) and to the logfile database(at the end)'''
 
-        row = EventLog.insert(carno=0,type="Finish",date=time.date(), time=time.time())
+        # The button text for the Stage Selection button also acts as an
+        # identifier for the stage in which the time was captured so
+        # it is added to the database for further verification during the results
+        loc = App.get_running_app().loc_but.text
+        loc = loc.split('\n')
+        loc = loc[1]
+
+        row = EventLog.insert(carno=0,location=loc,date=time.date(), time=time.time())
         row.execute()
         self.rv.data.insert(0, {'tm': time.time(),'carno': '0'})
         self.manager.get_screen("Log").reload()
@@ -212,29 +224,26 @@ class ViewLog(Screen):
         # Adds all the events present in the logfile
         log = EventLog.select()
         for i in log:
-            self.rv.data.insert(0,{'tm':i.time, 'carno':str(i.carno), 'date':str(i.date), 'type':i.type, 'row':i})
+            self.rv.data.insert(0,{'tm':i.time, 'carno':str(i.carno), 'date':str(i.date), 'row':i})
         self.prev_log = log if log.count() else None
 
     def reload(self, row = None):
         '''Adds the row into the Log Screen after a data capture is done of any event type (starting/finish)'''
 
         new_log = EventLog.select()
-        print(new_log.count())
 
-        if self.prev_log:# if there were data in the logfile
+        if self.prev_log:# if there was data in the logfile
             for i in new_log:
                 if i not in self.prev_log:
-                    self.rv.data.insert(0,{'tm':i.time, 'carno':str(i.carno), 'date':str(i.date), 'type':i.type, 'row':i})
-                    print(self.rv.data)
+                    self.rv.data.insert(0,{'tm':i.time, 'carno':str(i.carno), 'date':str(i.date), 'row':i})
         else:# if there were no data in the logfile and new data was just added
             for i in new_log:
-                self.rv.data.insert(0,{'tm':i.time, 'carno':str(i.carno), 'date':str(i.date), 'type':i.type, 'row':i})
-                print(self.rv.data)
+                self.rv.data.insert(0,{'tm':i.time, 'carno':str(i.carno), 'date':str(i.date), 'row':i})
 
         # this is added for change in any kind of data in a pre-existing record
         if row:
             for i in self.rv.data:
                 if row == i['row']:
                     index = self.rv.data.index(i)
-                    self.rv.data[index]= {'tm': row.time, 'date': str(row.date), 'carno': str(row.carno), 'type': row.type, 'row': i['row']}
+                    self.rv.data[index]= {'tm': row.time, 'date': str(row.date), 'carno': str(row.carno), 'row': i['row']}
         self.prev_log = new_log

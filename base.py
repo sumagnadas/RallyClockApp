@@ -6,7 +6,7 @@ one or more of the screens shown in the app
 from kivy.app import App
 from kivy.base import Builder
 from kivy.clock import Clock
-from kivy.properties import StringProperty, ObjectProperty, BooleanProperty, NumericProperty, Property
+from kivy.properties import StringProperty, ObjectProperty, BooleanProperty, NumericProperty
 from kivy.uix.recycleview import RecycleView
 from kivy.uix.recycleview.views import RecycleDataViewBehavior
 from kivy.uix.boxlayout import BoxLayout
@@ -14,7 +14,6 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.button import Button
 from kivy.uix.label import Label
 
-from re import sub
 from datetime import datetime,time
 from models import EventLog
 
@@ -34,11 +33,7 @@ class NumericInput(TextInput):
         super().__init__(**kwargs)
         self.multiline=False # set mode of input to single line
         self.input_type='number' # (For android) Show the numeric keyboard for input
-
-    def insert_text(self, substring: str, from_undo=False):
-        # If the user enters any character other than number, then it will not be accepted or entered in the input
-        s = sub('[^0-9]','',substring)
-        return super(NumericInput, self).insert_text(s,from_undo=from_undo)
+        self.input_filter='int'
 
 class RallyRow(RecycleDataViewBehavior, BoxLayout):
     ''' Class which is used as the row for showing data in the Finish data capture list'''
@@ -59,7 +54,7 @@ class RallyRow(RecycleDataViewBehavior, BoxLayout):
 
         if not self.row:
             # store the row for updating data without searching for the row in database every time
-            self.row = EventLog.select().where(EventLog.type=="Finish" and EventLog.id==self.row_id).get()
+            self.row = EventLog.select().where(EventLog.id==self.row_id).get()
 
             # set the prev_carno for getting the NumericInput back if user entered duplicate entry and also for finding the index from the RecycleView
             self.prev_carno = str(self.row.carno)
@@ -74,9 +69,9 @@ class RallyRow(RecycleDataViewBehavior, BoxLayout):
         rv = app.rv# the RecycleView of the Finish screen
         log = app.sm.get_screen("Log")# the Log screen
 
-        if not EventLog.select().where(EventLog.type=="Finish" and EventLog.carno==self.carno).count(): # See if there are any duplicates in the database
+        if not EventLog.select().where(EventLog.carno==self.carno).count(): # See if there are any duplicates in the database
             # Find the record with id (auto-incremented integer PK for this table) and corresponding event type and set the carno to new one
-            self.row = EventLog.select().where(EventLog.type=="Finish" and EventLog.id==self.row_id).get()
+            self.row = EventLog.select().where(EventLog.id==self.row_id).get()
             self.row.carno = self.carno
             self.row.save()
 

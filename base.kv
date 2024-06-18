@@ -21,17 +21,30 @@
     padding:10,10
     spacing: 10
     NumericInput:
+        #background_color: 1,1,1,1
         id: car
         text:root.carno
         size_hint_x: 0.2
         size: self.size
         on_text_validate: root.on_enter()
     TimeLabel:
-        size_hint_x: 0.8
+        size_hint_x: 0.6
         color: 0, 0, 0
         id: tm
         update:False
         tm:root.tm
+    RoundedButton:
+        color: 0,0,0
+        size_hint_x: 0.1
+        text: "RT"
+        #on_press: root.on_b3(self)
+        #on_release: app.on_release(self, 2)
+    RoundedButton:
+        color: 0,0,0
+        size_hint_x: 0.1
+        text: "LL"
+        #on_press: root.on_b3(self)
+        #on_release: app.on_release(self, 2)
 
 <RV>:
     RecycleBoxLayout:

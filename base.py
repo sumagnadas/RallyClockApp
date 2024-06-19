@@ -19,6 +19,10 @@ from models import EventLog
 
 Builder.load_file('base.kv')
 
+class NavigationBar(BoxLayout):
+    '''Class for the Navigation Bar in all the screens'''
+    pass
+
 class LogRow(RecycleDataViewBehavior, BoxLayout):
     '''Class which is used as the row for displaying the events in the logfile'''
 
@@ -92,6 +96,7 @@ class RallyRow(RecycleDataViewBehavior, BoxLayout):
 
 class TimeLabel(Label):
     '''Class for Labels showing only time'''
+
     tm = ObjectProperty(time(0,0,0))
     update = BooleanProperty(True) # Checks if the time in the Label is to be updated or not
     def __init__(self, **kwargs):
@@ -119,6 +124,7 @@ class TimeLabel(Label):
 
 class RoundedButton(Button):
     '''Class for Buttons with rounded corner (styling in kv file)'''
+
     pass
 
 class RV(RecycleView):

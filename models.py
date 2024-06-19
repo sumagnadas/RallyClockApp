@@ -2,7 +2,6 @@
 This module contains the table model for the logfile as well as
 connects to the database.
 '''
-from gspread import service_account
 from peewee import BooleanField, CharField, IntegerField, TimeField, DateField, SqliteDatabase, Model
 from playhouse.migrate import SqliteMigrator, migrate
 from kivy import platform
@@ -10,16 +9,17 @@ from os.path import join
 
 # Default file for saving log
 db_file = "logfile.db"
+settings_file = "settings.ini"
 
 # Since the testing is done on a desktop, the path is written for desktop. Hence, the filename is changed
 # to an android-compatible path when the app is actually run on an android phone
 if platform == "android":
     from android.storage import app_storage_path # This module is only available on android platform
-    db_file = join(app_storage_path(), db_file)
-
+    storage = app_storage_path()
+    db_file = join(storage, db_file)
+    settings_file = join(storage, settings_file)
 
 db = SqliteDatabase(db_file)
-sheet = service_account(filename='credentials.json').open("Rally Clock Data").sheet1
 
 class EventLog(Model):
     '''Basic Structure of the logfile database table'''
@@ -34,7 +34,7 @@ class EventLog(Model):
     class Meta:
         database = db
 
-    def upload():
+    def upload(sheet):
         log = EventLog.select()
         data = list()
         data.append(['Car no.', 'Time', 'Restart Time', 'Lifeline','Location','Date'])

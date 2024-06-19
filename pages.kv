@@ -15,23 +15,7 @@
         orientation: 'vertical'
         padding: 10, 10
         spacing: 10
-        BoxLayout:
-            size_hint_y: 0.1
-            background_color: 0,0,0,1
-            orientation:'horizontal'
-            RoundedButton
-                size_hint_x: 0.2
-                color: 0,0,0
-                text: 'back'
-                on_press: app.sm.current = "Home"
-                #on_release: app.on_release(self, 6)
-            TimeLabel:
-                size_hint_x:0.5
-                color: 0,0,0
-            Label:
-                size_hint_x: 0.3
-                color: 0,0,0
-                text: "Battery"
+        NavigationBar:
         RV:
             viewclass: 'RallyRow'
             id: rv
@@ -61,23 +45,7 @@
         orientation: "vertical"
         padding: 10, 10
         spacing: 10
-        BoxLayout:
-            size_hint_y: 0.05
-            background_color: 0,0,0,1
-            orientation:'horizontal'
-            RoundedButton
-                size_hint_x: 0.2
-                color: 0,0,0
-                text: 'back'
-                on_press: app.sm.current = "Home"
-                #on_release: app.on_release(self, 6)
-            TimeLabel:
-                size_hint_x:0.5
-                color: 0,0,0
-            Label:
-                size_hint_x: 0.3
-                color: 0,0,0
-                text: "Battery"
+        NavigationBar:
         BoxLayout:
             orientation: "horizontal"
             size_hint_y: 0.15
@@ -143,23 +111,7 @@
         orientation: "vertical"
         padding: 10, 10
         spacing: 10
-        BoxLayout:
-            size_hint_y: 0.05
-            background_color: 0,0,0,1
-            orientation:'horizontal'
-            RoundedButton
-                size_hint_x: 0.2
-                color: 0,0,0
-                text: 'back'
-                on_press: app.sm.current = "Home"
-                #on_release: app.on_release(self, 6)
-            TimeLabel:
-                size_hint_x:0.5
-                color: 0,0,0
-            Label:
-                size_hint_x: 0.3
-                color: 0,0,0
-                text: "Battery"
+        NavigationBar:
         RV:
             id:rv
             viewclass: 'LogRow'

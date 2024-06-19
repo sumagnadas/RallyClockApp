@@ -10,19 +10,20 @@ from kivy.properties import ObjectProperty, BooleanProperty
 from kivy.uix.screenmanager import Screen
 from kivy.uix.settings import SettingsWithNoMenu
 from kivy.graphics import Color, RoundedRectangle
-from models import EventLog
+from models import EventLog, settings_file
 import base
+from gspread import service_account
 from datetime import datetime
 from configparser import ConfigParser
 
 Builder.load_file("pages.kv")
 settings = ConfigParser()
-settings.read("settings.ini")
-if settings.read("settings.ini") == []:
+settings.read(settings_file)
+if settings.read(settings_file) == []:
     settings['SETTINGS'] = {'stage': "Time Control In",
                             'day': '1',
                             'stg_no': '1'}
-    with open('settings.ini','w') as f:
+    with open(settings_file,'w') as f:
             settings.write(f)
 
 class Home(Screen):
@@ -30,6 +31,7 @@ class Home(Screen):
     tm1 = ObjectProperty(None)
     tm2 = ObjectProperty(None)
     loc_but = ObjectProperty(None)
+    sheet = None
 
     def __init__(self, **kw):
         Clock.schedule_interval(self.update_clock, 0.1)
@@ -65,8 +67,10 @@ class Home(Screen):
         '''
         Uploads the data to the Google Sheets where itcan be downloaded from and post-processed
         '''
-
-        EventLog.upload()
+        
+        if not self.sheet:
+            self.sheet = service_account(filename='credentials.json').open("Rally Clock Data").sheet1
+        EventLog.upload(self.sheet)
         self._btnchg(obj, 5)
 
     def on_set(self, obj):
@@ -144,7 +148,7 @@ class StageSel(Screen):
                 self.stg_sel_drop.text = values[0]
 
         settings['SETTINGS']['stage'] = value
-        with open('settings.ini','w') as f:
+        with open(settings_file,'w') as f:
             settings.write(f)
 
         # Change button text format for the middle portion
@@ -177,7 +181,7 @@ class StageSel(Screen):
             app.loc_but.text = string
 
         if not curr_stg:
-            with open('settings.ini','w') as f:
+            with open(settings_file,'w') as f:
                 settings.write(f)
 
         # if the stage no/regroup no selection widget wasnt present but the button text still has stage no., this will remove it.

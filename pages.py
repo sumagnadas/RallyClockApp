@@ -67,7 +67,7 @@ class Home(Screen):
         '''
         Uploads the data to the Google Sheets where itcan be downloaded from and post-processed
         '''
-        
+
         if not self.sheet:
             self.sheet = service_account(filename='credentials.json').open("Rally Clock Data").sheet1
         EventLog.upload(self.sheet)
@@ -99,9 +99,9 @@ class StageSel(Screen):
     def __init__(self, **kw):
         super().__init__(**kw)
 
+        self.stg_sel_drop.text = settings['SETTINGS']['stg_no']
         self.stage.text = settings['SETTINGS']['stage']
         self.day.text = settings['SETTINGS']['day']
-        self.stg_sel_drop.text = settings['SETTINGS']['stg_no']
 
     def on_stage(self, value):
         '''
@@ -177,7 +177,7 @@ class StageSel(Screen):
         # if stage no./regroup no has changed (not present when at stage "Rally Start" or "Rally Finish")
         elif stg_no:
             settings['SETTINGS']['stg_no'] = stg_no
-            string = string[:-1] + stg_no
+            string = string[:-2] + f'{int(stg_no):02}'
             app.loc_but.text = string
 
         if not curr_stg:
@@ -187,9 +187,9 @@ class StageSel(Screen):
         # if the stage no/regroup no selection widget wasnt present but the button text still has stage no., this will remove it.
         # on the other hand, if the stage no/regroup no selection widget is present but the button text doesnt have stage no., this will add it
         if not self.stg_sel in self.box.children and app.loc_but.text[-1].isnumeric():
-            app.loc_but.text = app.loc_but.text[:-2]
+            app.loc_but.text = app.loc_but.text[:-3]
         elif self.stg_sel in self.box.children and not app.loc_but.text[-1].isnumeric():
-            app.loc_but.text = app.loc_but.text + f"-{self.stg_sel_drop.text}"
+            app.loc_but.text = app.loc_but.text + f"-{int(self.stg_sel_drop.text):02}"
 
     def on_no(self, value):
         self.but_text_ch(stg_no=value)

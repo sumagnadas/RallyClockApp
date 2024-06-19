@@ -36,7 +36,7 @@
             RoundedButton:
                 id: loc_but
                 color: 0,0,0
-                text: 'Location\nD1-TC-1'
+                text: 'Location\nD1-TC-01'
                 on_press: root.on_b5(self)
                 on_release: app.on_release(self, 4)
             RoundedButton:
@@ -48,12 +48,12 @@
             id: tm1
             size_hint_y:0.2
             color: 0,0,0
-            font_size: sp(self.height * 0.9)
+            font_size: self.height * 0.9
             bold: True
             text: "11:23"
         Label:
             id: tm2
-            font_size: sp(self.height * 0.9)
+            font_size: self.height * 0.9
             size_hint_y: 0.3
             color: 0,0,0
             bold: True

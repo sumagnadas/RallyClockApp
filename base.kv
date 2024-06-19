@@ -67,19 +67,19 @@
             radius: [10,]
 
 <NavigationBar>:
-    size_hint_y: 0.05
+    size_hint_y: 0.08
     background_color: 0,0,0,1
     orientation:'horizontal'
     RoundedButton
-        size_hint_x: 0.2
+        size_hint_x: 0.3
         color: 0,0,0
-        font_size: dp(self.height * 0.9)
+        font_size: self.height * 0.9
         text: 'Back'
         bold: True
         on_press: app.sm.current = "Home"
         #on_release: app.on_release(self, 6)
     TimeLabel:
-        size_hint_x:0.5
+        size_hint_x:0.4
         color: 0,0,0
     Label:
         size_hint_x: 0.3

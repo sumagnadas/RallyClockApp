@@ -203,7 +203,7 @@ class Page3(Screen):
 
         super().__init__(**kw)
         for i in EventLog.select():
-            self.rv.data.insert(0,{'tm':i.time, 'carno':str(i.carno)})
+            self.rv.data.insert(0,{'tm':i.time, 'carno':'' if not i.carno else str(i.carno)})
 
     def on_capture(self, time):
         '''Adds the new row to the RecycleView(at the top) and to the logfile database(at the end)'''
@@ -217,7 +217,7 @@ class Page3(Screen):
 
         row = EventLog.insert(carno=0,location=loc,date=time.date(), time=time.time())
         row.execute()
-        self.rv.data.insert(0, {'tm': time.time(),'carno': '0'})
+        self.rv.data.insert(0, {'tm': time.time(),'carno': ''})
         self.manager.get_screen("Log").reload()
 
 class ViewLog(Screen):

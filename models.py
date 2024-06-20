@@ -39,7 +39,7 @@ class EventLog(Model):
         data = list()
         data.append(['Car no.', 'Time', 'Restart Time', 'Lifeline','Location','Date'])
         for i in log:
-            data.append([i.carno, str(i.time), i.rtime, 'Yes' if i.LL else 'No', i.location, str(i.date)])
+            data.append(['' if not i.carno else str(i.carno), str(i.time), i.rtime, 'Yes' if i.LL else 'No', i.location, str(i.date)])
         sheet.append_rows(data)
         print("Done")
 

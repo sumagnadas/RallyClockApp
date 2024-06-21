@@ -28,8 +28,9 @@ class EventLog(Model):
     location = CharField()
     date = DateField()
     time = TimeField()
-    rtime = CharField(default="")
+    rtime = TimeField(null=True)
     LL = BooleanField(default=False)
+    is_rtm = BooleanField(default=False)
 
     class Meta:
         database = db
@@ -39,7 +40,9 @@ class EventLog(Model):
         data = list()
         data.append(['Car no.', 'Time', 'Restart Time', 'Lifeline','Location','Date'])
         for i in log:
-            data.append(['' if not i.carno else str(i.carno), str(i.time), i.rtime, 'Yes' if i.LL else 'No', i.location, str(i.date)])
+            rtime = str(i.rtime) if i.is_rtm else ''
+            LL = 'Yes' if i.LL else 'No'
+            data.append(['' if not i.carno else str(i.carno), str(i.time), rtime, LL, i.location, str(i.date)])
         sheet.append_rows(data)
         print("Done")
 
@@ -49,7 +52,7 @@ if db.get_tables() == []:# if the table doesn't exist, then create one
 
 # Backwards compatibility
 cols = [i.name for i in db.get_columns('eventlog')]
-if 'rtime' not in cols:
+print(cols)
+if 'rtime' in cols:
     mg = SqliteMigrator(db)
-    migrate(mg.add_column('eventlog','rtime',EventLog.rtime),
-            mg.add_column('eventlog','LL',EventLog.LL))
+    migrate(mg.alter_column_type('eventlog','rtime',TimeField(null=True)))

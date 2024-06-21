@@ -14,6 +14,14 @@
         color: 0, 0, 0
         update:False
         tm:root.tm
+    Label:
+        size_hint_x: 0.3
+        color:0,0,0
+        text: root.rtm.strftime("%H:%M:%S") if root.is_rtm else ''
+    Label:
+        size_hint_x: 0.2
+        color: 0,0,0
+        text: 'No' if not root.LL else 'Yes'
 <RallyRow>:
     car: car
     carno: car.text
@@ -43,7 +51,7 @@
         color: 0,0,0
         size_hint_x: 0.1
         text: "LL"
-        #on_press: root.on_b3(self)
+        on_press: root.on_ll()
         #on_release: app.on_release(self, 2)
 
 <RV>:
@@ -85,3 +93,22 @@
         size_hint_x: 0.3
         color: 0,0,0
         text: "Battery"
+
+<LLPopup>:
+    title: 'Confirmation'
+    size_hint: (0.4,0.4)
+    BoxLayout:
+        orientation:'vertical'
+        Label:
+            size_hint_y:0.7
+            text: 'Do you want to give Lifeline?'
+            text_size: self.width, None
+        BoxLayout:
+            size_hint_y:0.3
+            orientation: 'horizontal'
+            Button:
+                text:'Yes'
+                on_release: root.row.LL = True;root.dismiss()
+            Button:
+                text:'No'
+                on_release: root.row.LL = False;root.dismiss()

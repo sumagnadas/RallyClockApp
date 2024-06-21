@@ -13,11 +13,17 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.textinput import TextInput
 from kivy.uix.button import Button
 from kivy.uix.label import Label
+from kivy.uix.popup import Popup
 
 from datetime import datetime,time
 from models import EventLog
 
 Builder.load_file('base.kv')
+class LLPopup(Popup):
+    def __init__(self, row,**kwargs):
+        self.row = row
+        super().__init__(**kwargs)
+
 
 class NavigationBar(BoxLayout):
     '''Class for the Navigation Bar in all the screens'''
@@ -27,10 +33,11 @@ class LogRow(RecycleDataViewBehavior, BoxLayout):
     '''Class which is used as the row for displaying the events in the logfile'''
 
     tm = ObjectProperty(time(0,0,0))
+    rtm = ObjectProperty(time(0,0,0),allownone=True)
+    is_rtm = BooleanProperty(False)
     carno = StringProperty("0")
-    date = StringProperty("01-01-2004")
-    type = StringProperty("Test")
     row = ObjectProperty(None)
+    LL = BooleanProperty(False)
 
 class NumericInput(TextInput):
     def __init__(self, **kwargs):
@@ -43,6 +50,9 @@ class RallyRow(RecycleDataViewBehavior, BoxLayout):
     ''' Class which is used as the row for showing data in the Finish data capture list'''
 
     tm = ObjectProperty(time(0,0,0))
+    LL = BooleanProperty(False)
+    is_rtm = BooleanProperty(False)
+    rtm = ObjectProperty(time(0,0,0),allownone=True)
     carno = StringProperty("0")
     prev_carno = "0"
     row = None
@@ -51,22 +61,26 @@ class RallyRow(RecycleDataViewBehavior, BoxLayout):
     def refresh_view_attrs(self, rv, index, data):
         ''' Catch and handle the view changes '''
         data_rv = rv.data
-        self.index = data_rv.index(data)
-
-        # row_index is different because view adds to the top but database adds to the end (if the element is 2nd in view, it will be 2nd last in database)
-        self.row_id = len(data_rv) - self.index
-
-        if not self.row:
-            # store the row for updating data without searching for the row in database every time
-            self.row = EventLog.select().where(EventLog.id==self.row_id).get()
-
-            # set the prev_carno for getting the NumericInput back if user entered duplicate entry and also for finding the index from the RecycleView
-            self.prev_carno = str(self.row.carno)
 
         # the index shound change every time a row is added as the new element is added to the top and index of the elements increases by one
         self.index = data_rv.index(data)
 
+        # row_index is different because view adds to the top but database adds to the end (if the element is 2nd in view, it will be 2nd last in database)
+        row_id = len(data_rv) - self.index
+        print(self.row_id)
+        print(data)
+
+        if not self.row_id:
+            # store the row for updating data without searching for the row in database every time
+            row = EventLog.select().where(EventLog.id==row_id).get()
+
+            # set the prev_carno for getting the NumericInput back if user entered duplicate entry and also for finding the index from the RecycleView
+            self.prev_carno = str(row.carno)
+
+        self.row_id=row_id
+
         return super(RallyRow, self).refresh_view_attrs(rv, index, data)
+
     def on_enter(self):
 
         app = App.get_running_app()# the app being run
@@ -75,9 +89,9 @@ class RallyRow(RecycleDataViewBehavior, BoxLayout):
 
         if not EventLog.select().where(EventLog.carno==self.carno).count(): # See if there are any duplicates in the database
             # Find the record with id (auto-incremented integer PK for this table) and corresponding event type and set the carno to new one
-            self.row = EventLog.select().where(EventLog.id==self.row_id).get()
-            self.row.carno = self.carno
-            self.row.save()
+            row = EventLog.select().where(EventLog.id==self.row_id).get()
+            row.carno = self.carno
+            row.save()
 
             # Set the new carno in the view
             rv.data[self.index]['carno'] = self.carno
@@ -86,13 +100,28 @@ class RallyRow(RecycleDataViewBehavior, BoxLayout):
             self.prev_carno = self.carno
 
             # Reload the Log with the new row changes
-            log.reload(row=self.row)
+            log.reload(row=row)
         else:
             # If there is a duplicate, show a popup(Not yet implemented) which confirms whether the user wants to keep it
             # If user confirms to keep it, then the carno will be set in the process in above if condition
             # If user declines, then the carno input will be returned to the previous carno and asked to enter another one
             self.carno = self.prev_carno
             print("Already present. please enter another car no.")
+
+    def on_LL(self,instance, value):
+        #self.tm = self.tm.replace(minute=self.row.time.minute + 5)
+        #self.row.time = self.tm
+        row = EventLog.select().where(EventLog.id==self.row_id).get()
+        row.LL = self.LL
+        print(self.LL)
+        row.save()
+        app = App.get_running_app()
+        log = app.sm.get_screen("Log")
+        log.reload(row=row)
+        print('Lifeline Given')
+
+    def on_ll(self):
+        LLPopup(row=self).open()
 
 class TimeLabel(Label):
     '''Class for Labels showing only time'''

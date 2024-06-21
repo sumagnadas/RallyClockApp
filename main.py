@@ -12,6 +12,7 @@ class MainApp(App):
     _color=dict()
     _rect = dict()
     sm = ScreenManager(transition=NoTransition())
+    use_kivy_settings = False
 
     def build(self):
         home = Home(name="Home")

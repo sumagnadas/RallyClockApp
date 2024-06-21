@@ -14,17 +14,16 @@ from models import EventLog, settings_file
 import base
 from gspread import service_account
 from datetime import datetime
-from configparser import ConfigParser
+from kivy.config import ConfigParser
 
 Builder.load_file("pages.kv")
 settings = ConfigParser()
 settings.read(settings_file)
-if settings.read(settings_file) == []:
+if settings.sections() == []:
     settings['SETTINGS'] = {'stage': "Time Control In",
                             'day': '1',
                             'stg_no': '1'}
-    with open(settings_file,'w') as f:
-            settings.write(f)
+    settings.write()
 
 class Home(Screen):
     '''Class for the Home page which is shown on opening the app'''
@@ -74,6 +73,7 @@ class Home(Screen):
         self._btnchg(obj, 5)
 
     def on_set(self, obj):
+        self.manager.current = "Settings"
         print("settings")
         self._btnchg(obj, 6)
         print(obj)
@@ -148,8 +148,7 @@ class StageSel(Screen):
                 self.stg_sel_drop.text = values[0]
 
         settings['SETTINGS']['stage'] = value
-        with open(settings_file,'w') as f:
-            settings.write(f)
+        settings.write()
 
         # Change button text format for the middle portion
         self.but_text_ch(curr_stg=s)
@@ -181,8 +180,7 @@ class StageSel(Screen):
             app.loc_but.text = string
 
         if not curr_stg:
-            with open(settings_file,'w') as f:
-                settings.write(f)
+            settings.write()
 
         # if the stage no/regroup no selection widget wasnt present but the button text still has stage no., this will remove it.
         # on the other hand, if the stage no/regroup no selection widget is present but the button text doesnt have stage no., this will add it
@@ -203,7 +201,7 @@ class Page3(Screen):
 
         super().__init__(**kw)
         for i in EventLog.select():
-            self.rv.data.insert(0,{'tm':i.time, 'carno':'' if not i.carno else str(i.carno)})
+            self.rv.data.insert(0,{'tm':i.time, 'carno':'' if not i.carno else str(i.carno), 'LL': i.LL, 'is_rtm':i.is_rtm,'rtm':i.rtime})
 
     def on_capture(self, time):
         '''Adds the new row to the RecycleView(at the top) and to the logfile database(at the end)'''
@@ -217,7 +215,7 @@ class Page3(Screen):
 
         row = EventLog.insert(carno=0,location=loc,date=time.date(), time=time.time())
         row.execute()
-        self.rv.data.insert(0, {'tm': time.time(),'carno': ''})
+        self.rv.data.insert(0, {'tm': time.time(),'carno': '', 'LL':False, 'is_rtm': False,'rtm': None})
         self.manager.get_screen("Log").reload()
 
 class ViewLog(Screen):
@@ -228,7 +226,7 @@ class ViewLog(Screen):
         # Adds all the events present in the logfile
         log = EventLog.select()
         for i in log:
-            self.rv.data.insert(0,{'tm':i.time, 'carno':str(i.carno), 'date':str(i.date), 'row':i})
+            self.rv.data.insert(0,{'tm':i.time, 'carno':str(i.carno), 'date':str(i.date), 'rtm': i.rtime, 'LL': i.LL, 'row':i})
         self.prev_log = log if log.count() else None
 
     def reload(self, row = None):
@@ -239,15 +237,18 @@ class ViewLog(Screen):
         if self.prev_log:# if there was data in the logfile
             for i in new_log:
                 if i not in self.prev_log:
-                    self.rv.data.insert(0,{'tm':i.time, 'carno':str(i.carno), 'date':str(i.date), 'row':i})
+                    print(i.LL)
+                    print(i.time)
+                    self.rv.data.insert(0,{'tm':i.time, 'carno':str(i.carno), 'date':str(i.date), 'row':i, 'rtm': i.rtime, 'LL': i.LL})
         else:# if there were no data in the logfile and new data was just added
             for i in new_log:
-                self.rv.data.insert(0,{'tm':i.time, 'carno':str(i.carno), 'date':str(i.date), 'row':i})
+                self.rv.data.insert(0,{'tm':i.time, 'carno':str(i.carno), 'date':str(i.date), 'row':i, 'rtm': i.rtime, 'LL': i.LL})
 
         # this is added for change in any kind of data in a pre-existing record
         if row:
             for i in self.rv.data:
                 if row == i['row']:
+                    print(row.LL)
                     index = self.rv.data.index(i)
-                    self.rv.data[index]= {'tm': row.time, 'date': str(row.date), 'carno': str(row.carno), 'row': i['row']}
+                    self.rv.data[index]= {'tm': row.time, 'date': str(row.date), 'carno': str(row.carno), 'row': i['row'],'rtm': row.rtime, 'LL': row.LL}
         self.prev_log = new_log

@@ -53,8 +53,8 @@ class RallyRow(RecycleDataViewBehavior, BoxLayout):
     LL = BooleanProperty(False)
     is_rtm = BooleanProperty(False)
     rtm = ObjectProperty(time(0,0,0),allownone=True)
-    carno = StringProperty("0")
-    prev_carno = "0"
+    carno = StringProperty("")
+    prev_carno = ""
     row = None
     row_id = NumericProperty(0)
 
@@ -109,8 +109,6 @@ class RallyRow(RecycleDataViewBehavior, BoxLayout):
             print("Already present. please enter another car no.")
 
     def on_LL(self,instance, value):
-        #self.tm = self.tm.replace(minute=self.row.time.minute + 5)
-        #self.row.time = self.tm
         row = EventLog.select().where(EventLog.id==self.row_id).get()
         row.LL = self.LL
         print(self.LL)

@@ -8,7 +8,6 @@ from kivy.base import Builder
 from kivy.clock import Clock
 from kivy.properties import ObjectProperty, BooleanProperty
 from kivy.uix.screenmanager import Screen
-from kivy.uix.settings import SettingsWithNoMenu
 from kivy.graphics import Color, RoundedRectangle
 from models import EventLog, settings_file
 import base
@@ -83,8 +82,11 @@ class Home(Screen):
         self.tm1.text = time.strftime("%H:%M")
         self.tm2.text = time.strftime("%S")
 
-class SetPage(SettingsWithNoMenu):
-    pass
+class SetPage(Screen):
+    def erase_log(self):
+        EventLog.delete().execute()
+        self.manager.get_screen("Log").rv.data = list()
+        self.manager.get_screen("Page3").rv.data = list()
 
 class StageSel(Screen):
     '''Class for Stage, Rally Day selection Screen'''
@@ -213,7 +215,7 @@ class Page3(Screen):
         loc = loc.split('\n')
         loc = loc[1]
 
-        row = EventLog.insert(carno=0,location=loc,date=time.date(), time=time.time())
+        row = EventLog.insert(carno='',location=loc,date=time.date(), time=time.time())
         row.execute()
         self.rv.data.insert(0, {'tm': time.time(),'carno': '', 'LL':False, 'is_rtm': False,'rtm': None})
         self.manager.get_screen("Log").reload()

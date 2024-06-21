@@ -47,7 +47,7 @@ requirements = python3,kivy,peewee,gspread,google-auth,google-auth-oauthlib,cach
 #presplash.filename = %(source.dir)s/data/presplash.png
 
 # (str) Icon of the application
-icon.filename =icon.jpeg
+icon.filename =icon.png
 
 # (list) Supported orientations
 # Valid options are: landscape, portrait, portrait-reverse or landscape-reverse

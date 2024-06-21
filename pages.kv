@@ -116,3 +116,25 @@
         RV:
             id:rv
             viewclass: 'LogRow'
+
+<SetPage>:
+    canvas.before:
+        Color:
+            rgb: 1,1,1
+        Rectangle:
+            size: self.size
+    BoxLayout:
+        size: self.parent.size
+        size_hint: None, None
+        orientation: "vertical"
+        padding: 10, 10
+        spacing: 10
+        NavigationBar:
+        RoundedButton:
+            color:0,0,0
+            bold: True
+            size_hint_y:0.1
+            text: 'Erase ALL Captures'
+            on_release: root.erase_log()
+        Widget:
+            size_hint_y:0.82

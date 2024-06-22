@@ -14,16 +14,38 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
+from kivy.uix.modalview import ModalView
+from kivy.config import ConfigParser
 
 from datetime import datetime,time
-from models import EventLog
+from models import EventLog, settings_file
 
 Builder.load_file('base.kv')
+settings = ConfigParser()
+settings.read(settings_file)
+if settings.sections() == []:
+    settings['SETTINGS'] = {'stage': "Time Control In",
+                            'day': '1',
+                            'stg_no': '1',
+                            'use_ll': 'True'}
+    settings.write()
 class LLPopup(Popup):
     def __init__(self, row,**kwargs):
         self.row = row
         super().__init__(**kwargs)
 
+class Dialog(ModalView):
+    fsz = ObjectProperty(None)
+    text = ObjectProperty(None)
+    def __init__(self, parent,text,**kwargs):
+        super().__init__(**kwargs)
+        self.height = parent.height * 0.1
+        self.width = parent.width *0.4
+        self.text.text = text
+
+    def show(self):
+        self.open()
+        Clock.schedule_interval(lambda dt: self.dismiss(),5)
 
 class NavigationBar(BoxLayout):
     '''Class for the Navigation Bar in all the screens'''
@@ -38,6 +60,20 @@ class LogRow(RecycleDataViewBehavior, BoxLayout):
     carno = StringProperty("0")
     row = ObjectProperty(None)
     LL = BooleanProperty(False)
+    use_ll = BooleanProperty(settings.getboolean('SETTINGS','use_ll'))
+    ll_row = ObjectProperty(None)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.reload_ll('SETTINGS','use_ll', None)
+        settings.add_callback(self.reload_ll, 'SETTINGS','use_ll')
+
+    def reload_ll(self,section, key,value):
+        self.use_ll = settings.getboolean(section,key)
+        if not self.use_ll and self.ll_row in self.children:
+            self.remove_widget(self.ll_row)
+        elif self.use_ll and self.ll_row not in self.children:
+            self.add_widget(self.ll_row)
 
 class NumericInput(TextInput):
     def __init__(self, **kwargs):
@@ -51,6 +87,8 @@ class RallyRow(RecycleDataViewBehavior, BoxLayout):
 
     tm = ObjectProperty(time(0,0,0))
     LL = BooleanProperty(False)
+    use_ll = BooleanProperty(settings.getboolean('SETTINGS','use_ll'))
+    ll_but = ObjectProperty(None)
     is_rtm = BooleanProperty(False)
     rtm = ObjectProperty(time(0,0,0),allownone=True)
     carno = StringProperty("")
@@ -58,6 +96,10 @@ class RallyRow(RecycleDataViewBehavior, BoxLayout):
     row = None
     row_id = NumericProperty(0)
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.reload_ll('SETTINGS','use_ll', None)
+        settings.add_callback(self.reload_ll, 'SETTINGS','use_ll')
     def refresh_view_attrs(self, rv, index, data):
         ''' Catch and handle the view changes '''
         data_rv = rv.data
@@ -120,6 +162,13 @@ class RallyRow(RecycleDataViewBehavior, BoxLayout):
 
     def on_ll(self):
         LLPopup(row=self).open()
+
+    def reload_ll(self,section, key,value):
+        self.use_ll = settings.getboolean(section,key)
+        if not self.use_ll and self.ll_but in self.children:
+            self.remove_widget(self.ll_but)
+        elif self.use_ll and self.ll_but not in self.children:
+            self.add_widget(self.ll_but)
 
 class TimeLabel(Label):
     '''Class for Labels showing only time'''

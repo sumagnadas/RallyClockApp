@@ -2,6 +2,7 @@
 #:import now datetime.datetime
 
 <LogRow>:
+    ll_row: ll_row.__self__
     orientation: 'horizontal'
     padding:10,10
     spacing: 10
@@ -10,19 +11,21 @@
         color: 0, 0, 0
         text:root.carno
     TimeLabel:
-        size_hint_x: 0.3
+        size_hint_x: 0.3 if root.use_ll else 0.4
         color: 0, 0, 0
         update:False
         tm:root.tm
     Label:
-        size_hint_x: 0.3
+        size_hint_x: 0.3 if root.use_ll else 0.4
         color:0,0,0
         text: root.rtm.strftime("%H:%M:%S") if root.is_rtm else ''
     Label:
+        id: ll_row
         size_hint_x: 0.2
         color: 0,0,0
         text: 'No' if not root.LL else 'Yes'
 <RallyRow>:
+    ll_but:ll_but.__self__
     car: car
     carno: car.text
     orientation: 'horizontal'
@@ -32,11 +35,11 @@
         #background_color: 1,1,1,1
         id: car
         text:root.carno
-        size_hint_x: 0.2
+        size_hint_x: 0.2 if root.use_ll else 0.25
         size: self.size
         on_text_validate: root.on_enter()
     TimeLabel:
-        size_hint_x: 0.6
+        size_hint_x: 0.6 if root.use_ll else 0.65
         color: 0, 0, 0
         id: tm
         update:False
@@ -48,6 +51,7 @@
         #on_press: root.on_b3(self)
         #on_release: app.on_release(self, 2)
     RoundedButton:
+        id:ll_but
         color: 0,0,0
         size_hint_x: 0.1
         text: "LL"
@@ -112,3 +116,16 @@
             Button:
                 text:'No'
                 on_release: root.row.LL = False;root.dismiss()
+
+<Dialog>:
+    auto_dismiss: True
+    text: text
+    size_hint:None,None
+    background_color: (1,1,1,0.8)
+    overlay_color: (0,0,0,0)
+    pos_hint: {'center_x':0.5, 'center_y':0.1}
+    Label:
+        id: text
+        size: root.size
+        font_size: self.height * 0.28
+        text: ''

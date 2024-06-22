@@ -118,6 +118,7 @@
             viewclass: 'LogRow'
 
 <SetPage>:
+    use_ll: use_ll
     canvas.before:
         Color:
             rgb: 1,1,1
@@ -136,5 +137,18 @@
             size_hint_y:0.1
             text: 'Erase ALL Captures'
             on_release: root.erase_log()
+        BoxLayout:
+            orientation:'horizontal'
+            padding: 10, 10
+            spacing: 10
+            size_hint_y:0.1
+            Label:
+                size_hint_x:0.7
+                color: 0,0,0
+                text:'Use Lifeline'
+            Switch:
+                id: use_ll
+                size_hint_x:0.3
+                on_active: root.on_active(self.active)
         Widget:
-            size_hint_y:0.82
+            size_hint_y:0.72

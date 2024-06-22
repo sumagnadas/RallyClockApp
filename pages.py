@@ -9,20 +9,13 @@ from kivy.clock import Clock
 from kivy.properties import ObjectProperty, BooleanProperty
 from kivy.uix.screenmanager import Screen
 from kivy.graphics import Color, RoundedRectangle
-from models import EventLog, settings_file
-import base
+from models import EventLog
+from base import Dialog, settings
 from gspread import service_account
 from datetime import datetime
 from kivy.config import ConfigParser
 
 Builder.load_file("pages.kv")
-settings = ConfigParser()
-settings.read(settings_file)
-if settings.sections() == []:
-    settings['SETTINGS'] = {'stage': "Time Control In",
-                            'day': '1',
-                            'stg_no': '1'}
-    settings.write()
 
 class Home(Screen):
     '''Class for the Home page which is shown on opening the app'''
@@ -69,6 +62,7 @@ class Home(Screen):
         if not self.sheet:
             self.sheet = service_account(filename='credentials.json').open("Rally Clock Data").sheet1
         EventLog.upload(self.sheet)
+        Dialog(self, 'Done Uploading').show()
         self._btnchg(obj, 5)
 
     def on_set(self, obj):
@@ -83,10 +77,22 @@ class Home(Screen):
         self.tm2.text = time.strftime("%S")
 
 class SetPage(Screen):
+    use_ll = ObjectProperty(None)
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        if 'use_ll' not in settings.options('SETTINGS'):
+            settings['SETTINGS']['use_ll'] = True
+        self.use_ll.active = settings.getboolean('SETTINGS','use_ll')
+
     def erase_log(self):
         EventLog.delete().execute()
         self.manager.get_screen("Log").rv.data = list()
         self.manager.get_screen("Page3").rv.data = list()
+        Dialog(self, 'Done Erasing').show()
+
+    def on_active(self,value):
+        settings['SETTINGS']['use_ll'] = str(value)
+        settings.write()
 
 class StageSel(Screen):
     '''Class for Stage, Rally Day selection Screen'''

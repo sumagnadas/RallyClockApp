@@ -29,6 +29,10 @@ if settings.sections() == []:
                             'stg_no': '1',
                             'use_ll': 'True'}
     settings.write()
+
+if 'use_ll' not in settings.options('SETTINGS'):
+    settings['SETTINGS']['use_ll'] = 'True'
+    settings.write()
 class LLPopup(Popup):
     def __init__(self, row,**kwargs):
         self.row = row

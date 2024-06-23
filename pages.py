@@ -13,7 +13,6 @@ from models import EventLog
 from base import Dialog, settings
 from gspread import service_account
 from datetime import datetime
-from kivy.config import ConfigParser
 
 Builder.load_file("pages.kv")
 
@@ -80,8 +79,6 @@ class SetPage(Screen):
     use_ll = ObjectProperty(None)
     def __init__(self, **kw):
         super().__init__(**kw)
-        if 'use_ll' not in settings.options('SETTINGS'):
-            settings['SETTINGS']['use_ll'] = True
         self.use_ll.active = settings.getboolean('SETTINGS','use_ll')
 
     def erase_log(self):

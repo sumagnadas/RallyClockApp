@@ -37,7 +37,7 @@ version = 0.1
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3,kivy,peewee,gspread,google-auth,google-auth-oauthlib,cachetools,pyasn1,pyasn1_modules,rsa,requests-oauthlib,oauthlib,certifi,charset-normalizer,idna,urllib3
+requirements = python3,kivy,peewee,gspread,google-auth,google-auth-oauthlib,cachetools,pyasn1,pyasn1_modules,rsa,requests-oauthlib,oauthlib,certifi,charset-normalizer,idna,urllib3,ntplib
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes

@@ -17,7 +17,7 @@ from kivy.uix.popup import Popup
 from kivy.uix.modalview import ModalView
 from kivy.config import ConfigParser
 
-from datetime import datetime,time
+from datetime import datetime,time, timedelta
 from models import EventLog, settings_file
 
 Builder.load_file('base.kv')
@@ -33,6 +33,12 @@ if settings.sections() == []:
 if 'use_ll' not in settings.options('SETTINGS'):
     settings['SETTINGS']['use_ll'] = 'True'
     settings.write()
+
+if 'offset' not in settings.options('SETTINGS'):
+    settings['SETTINGS']['offset'] = '0'
+    settings.write()
+
+offset = settings.getfloat('SETTINGS','offset')
 class LLPopup(Popup):
     def __init__(self, row,**kwargs):
         self.row = row
@@ -179,6 +185,7 @@ class TimeLabel(Label):
 
     tm = ObjectProperty(time(0,0,0))
     update = BooleanProperty(True) # Checks if the time in the Label is to be updated or not
+    prev_offset = ObjectProperty(0)
     def __init__(self, **kwargs):
         self.update = self.update if not 'update' in kwargs.keys() else kwargs['update']
 
@@ -196,8 +203,13 @@ class TimeLabel(Label):
             self.time = time(0,0,0)
 
     def update_clock(self, dt):
-      '''Sets the Label text to the current time if the update property is true'''
-      self.tm = datetime.now().time()
+        '''Sets the Label text to the current time if the update property is true'''
+
+        t1 = datetime.now()
+        tm = datetime.now() + timedelta(seconds=offset,microseconds=self.prev_offset)
+        t2 = datetime.now()
+        self.prev_offset = (t2 - t1).microseconds
+        self.tm = tm.time()
 
     def on_tm(self, instance, value):
         self.text = self.tm.strftime("%H:%M:%S")

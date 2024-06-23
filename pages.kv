@@ -135,6 +135,12 @@
             color:0,0,0
             bold: True
             size_hint_y:0.1
+            text: 'Sync Time'
+            on_release: root.sync()
+        RoundedButton:
+            color:0,0,0
+            bold: True
+            size_hint_y:0.1
             text: 'Erase ALL Captures'
             on_release: root.erase_log()
         BoxLayout:
@@ -151,4 +157,4 @@
                 size_hint_x:0.3
                 on_active: root.on_active(self.active)
         Widget:
-            size_hint_y:0.72
+            size_hint_y:0.62

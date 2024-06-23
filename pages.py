@@ -10,9 +10,12 @@ from kivy.properties import ObjectProperty, BooleanProperty
 from kivy.uix.screenmanager import Screen
 from kivy.graphics import Color, RoundedRectangle
 from models import EventLog
-from base import Dialog, settings
+from base import Dialog, settings, offset
 from gspread import service_account
-from datetime import datetime
+from datetime import datetime, timedelta
+from ntplib import NTPClient, NTPException
+
+ntp = NTPClient()
 
 Builder.load_file("pages.kv")
 
@@ -22,6 +25,7 @@ class Home(Screen):
     tm2 = ObjectProperty(None)
     loc_but = ObjectProperty(None)
     sheet = None
+    prev_offset = ObjectProperty(0)
 
     def __init__(self, **kw):
         Clock.schedule_interval(self.update_clock, 0.1)
@@ -71,7 +75,11 @@ class Home(Screen):
         print(obj)
 
     def update_clock(self, dt):
-        time = datetime.now()
+        t1 = datetime.now()
+        tm = datetime.now() + timedelta(seconds=offset,microseconds=self.prev_offset)
+        t2 = datetime.now()
+        self.prev_offset = (t2 - t1).microseconds
+        time = tm.time()
         self.tm1.text = time.strftime("%H:%M")
         self.tm2.text = time.strftime("%S")
 
@@ -90,6 +98,18 @@ class SetPage(Screen):
     def on_active(self,value):
         settings['SETTINGS']['use_ll'] = str(value)
         settings.write()
+
+    def sync(self):
+        try:
+            response = ntp.request('pool.ntp.org')
+            global offset
+            offset = response.offset
+            print(offset)
+            settings['SETTINGS']['offset'] = str(offset)
+            settings.write()
+        except NTPException:
+            Dialog(self, "Syncing Error").open()
+
 
 class StageSel(Screen):
     '''Class for Stage, Rally Day selection Screen'''
@@ -201,6 +221,7 @@ class Page3(Screen):
     '''Class for the Page3 Screen'''
 
     rv = ObjectProperty(None)
+    prev_offset = ObjectProperty(0)
     def __init__(self, **kw):
         '''Initial input of the records to the RecycleView from the log file'''
 
@@ -217,10 +238,14 @@ class Page3(Screen):
         loc = App.get_running_app().loc_but.text
         loc = loc.split('\n')
         loc = loc[1]
+        t1 = datetime.now()
+        tm = time + timedelta(seconds=offset,microseconds=self.prev_offset)
+        t2 = datetime.now()
+        self.prev_offset = (t2 - t1).microseconds
 
-        row = EventLog.insert(carno='',location=loc,date=time.date(), time=time.time())
+        row = EventLog.insert(carno='',location=loc,date=time.date(), time=tm.time())
         row.execute()
-        self.rv.data.insert(0, {'tm': time.time(),'carno': '', 'LL':False, 'is_rtm': False,'rtm': None})
+        self.rv.data.insert(0, {'tm': tm.time(),'carno': '', 'LL':False, 'is_rtm': False,'rtm': None})
         self.manager.get_screen("Log").reload()
 
 class ViewLog(Screen):

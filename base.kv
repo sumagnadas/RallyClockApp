@@ -32,6 +32,7 @@
     padding:10,10
     spacing: 10
     NumericInput:
+        text_validate_unfocus: False
         #background_color: 1,1,1,1
         id: car
         text:root.carno
@@ -85,18 +86,14 @@
     RoundedButton
         size_hint_x: 0.3
         color: 0,0,0
-        font_size: self.height * 0.9
+        font_size: (self.height ** 1.9 + self.width**1.2) ** 0.5
         text: 'Back'
         bold: True
         on_press: app.sm.current = "Home"
         #on_release: app.on_release(self, 6)
     TimeLabel:
-        size_hint_x:0.4
+        size_hint_x:0.7
         color: 0,0,0
-    Label:
-        size_hint_x: 0.3
-        color: 0,0,0
-        text: "Battery"
 
 <LLPopup>:
     title: 'Confirmation'
@@ -129,3 +126,7 @@
         size: root.size
         font_size: self.height * 0.28
         text: ''
+
+<TimeLabel>:
+    font_size:  (self.height ** 1.9 + self.width**1.2) ** 0.5
+    bold: True

@@ -107,9 +107,9 @@ class SetPage(Screen):
             print(offset)
             settings['SETTINGS']['offset'] = str(offset)
             settings.write()
-            Dialog(self, 'Done Syncing').open()
+            Dialog(self, '-Done-').open()
         except NTPException:
-            Dialog(self, "Syncing Error").open()
+            Dialog(self, "Done").open()
 
 class StageSel(Screen):
     '''Class for Stage, Rally Day selection Screen'''

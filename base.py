@@ -158,7 +158,7 @@ class RallyRow(RecycleDataViewBehavior, BoxLayout):
             # If user confirms to keep it, then the carno will be set in the process in above if condition
             # If user declines, then the carno input will be returned to the previous carno and asked to enter another one
             self.carno = self.prev_carno
-            Dialog(app.sm.get_screen("Page3"), "Duplicate Car No. Enter Again").open()
+            Dialog(app.sm.get_screen("Page3"), "Duplicate").open()
 
     def on_LL(self,instance, value):
         row = EventLog.select().where(EventLog.id==self.row_id).get()
@@ -168,7 +168,6 @@ class RallyRow(RecycleDataViewBehavior, BoxLayout):
         app = App.get_running_app()
         log = app.sm.get_screen("Log")
         log.reload(row=row)
-        print('Lifeline Given')
 
     def on_ll(self):
         LLPopup(row=self).open()

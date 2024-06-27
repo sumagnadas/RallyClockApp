@@ -88,7 +88,12 @@
 
 <NavigationBar>:
     size_hint_y: 0.08
-    background_color: 0,0,0,1
+    canvas.before:
+        Color:
+            rgb: 189/255, 228/255, 244/255
+        Rectangle:
+            pos: self.pos
+            size: self.size
     orientation:'horizontal'
     RoundedButton
         size_hint_x: 0.3

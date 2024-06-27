@@ -120,8 +120,6 @@ class RallyRow(RecycleDataViewBehavior, BoxLayout):
 
         # row_index is different because view adds to the top but database adds to the end (if the element is 2nd in view, it will be 2nd last in database)
         row_id = len(data_rv) - self.index
-        print(self.row_id)
-        print(data)
 
         if not self.row_id:
             # store the row for updating data without searching for the row in database every time
@@ -173,7 +171,7 @@ class RallyRow(RecycleDataViewBehavior, BoxLayout):
             log.reload(row=row)
             dia = Dialog(app.sm.get_screen("Page3"), "Duplicate")
             dia.pos_hint = {'center_x':0.5, 'center_y':0.9}
-            dia.open()
+            dia.show()
 
     def on_LL(self,instance, value):
         row = EventLog.select().where(EventLog.id==self.row_id).get()

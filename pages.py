@@ -35,7 +35,7 @@ class Home(Screen):
         '''Changes the color of the RoundedButton when pressed(due to custom layout, there is no appearance change of button when it is pressed by the user)'''
 
         with obj.canvas:
-            App.get_running_app()._color[i] = Color(200/255, 200/255, 200/255,0.9)
+            App.get_running_app()._color[i] = Color(200/255, 228/255, 244/255,0.5)
             App.get_running_app()._rect[i] = RoundedRectangle(pos=obj.pos, size=obj.size)
 
     def on_b3(self, obj):

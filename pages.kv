@@ -168,12 +168,12 @@
                     on_active: root.on_active(self.active)
             Label:
                 underline:True
-                size_hint_y:0.1
+                size_hint_y:0.7
                 markup: True
                 text_size:self.size
+                font_size: root.height / 20
                 halign: 'center'
-                text: '[ref=mail]Contact Us: rallyclockuploader@gmail.com[/ref]'
+                valign: 'top'
+                text: '[ref=mail]Feedback and Queries: rallyclockuploader@gmail.com[/ref]'
                 color:0,0,0
                 on_ref_press: link.open('mailto:rallyclockuploader@gmail.com')
-            Widget:
-                size_hint_y:0.6 #0.52

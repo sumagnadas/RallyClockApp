@@ -7,6 +7,7 @@ It starts the main thread as well as setup the app for running
 from kivy.app import App
 from pages import Home, Page3, StageSel, ViewLog, SetPage
 from kivy.uix.screenmanager import ScreenManager,NoTransition
+from kivy.core.window import Window
 
 class MainApp(App):
     _color=dict()
@@ -23,7 +24,19 @@ class MainApp(App):
         self.sm.add_widget(ViewLog(name="Log"))
         self.sm.add_widget(SetPage(name='Settings'))
         self.rv = self.sm.get_screen('Page3').rv
+
+        win = Window
+        win.bind(on_keyboard=self.my_key_handler)
         return self.sm
+
+    def my_key_handler(self, window, keycode1, keycode2, text, modifiers):
+        if keycode1 in [27, 1001]:
+            if self.sm.current == 'Home':
+                return False
+            else:
+                self.sm.current = 'Home'
+                return True
+        return False
 
     def on_release(self, obj, i):
         obj.canvas.remove(self._color[i])

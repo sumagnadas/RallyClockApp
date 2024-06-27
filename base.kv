@@ -9,6 +9,8 @@
     Label:
         size_hint_x: 0.2
         color: 0, 0, 0
+        bold: True
+        font_size:(self.height ** 1.8 + self.width**1.2) ** 0.5
         text:root.carno
     TimeLabel:
         size_hint_x: 0.3 if root.use_ll else 0.4
@@ -17,11 +19,15 @@
         tm:root.tm
     Label:
         size_hint_x: 0.3 if root.use_ll else 0.4
+        font_size:  (self.height ** 1.9 + self.width**1.2) ** 0.5
+        bold: True
         color:0,0,0
         text: root.rtm.strftime("%H:%M:%S") if root.is_rtm else ''
     Label:
+        bold: True
         id: ll_row
         size_hint_x: 0.2
+        font_size:(self.height ** 1.8 + self.width**1.2) ** 0.5
         color: 0,0,0
         text: 'No' if not root.LL else 'Yes'
 <RallyRow>:
@@ -32,11 +38,12 @@
     padding:10,10
     spacing: 10
     NumericInput:
-        text_validate_unfocus: False
+        text_validate_unfocus: not root.wrong_car
         #background_color: 1,1,1,1
         id: car
         text:root.carno
         size_hint_x: 0.2 if root.use_ll else 0.25
+        font_size: self.height * 0.6
         size: self.size
         on_text_validate: root.on_enter()
     TimeLabel:

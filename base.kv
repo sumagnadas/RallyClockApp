@@ -5,9 +5,11 @@
     ll_row: ll_row.__self__
     orientation: 'horizontal'
     padding:10,10
-    spacing: 10
+    spacing: 20
     Label:
         size_hint_x: 0.2
+        text_size: self.size
+        halign: 'left'
         color: 0, 0, 0
         bold: True
         font_size:(self.height ** 1.8 + self.width**1.2) ** 0.5
@@ -36,7 +38,7 @@
     carno: car.text
     orientation: 'horizontal'
     padding:10,10
-    spacing: 10
+    spacing: 20
     NumericInput:
         text_validate_unfocus: not root.wrong_car
         #background_color: 1,1,1,1

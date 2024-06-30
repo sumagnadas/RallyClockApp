@@ -12,7 +12,7 @@
         halign: 'left'
         color: 0, 0, 0
         bold: True
-        font_size:(self.height ** 1.8 + self.width**1.2) ** 0.5
+        font_size:(self.height ** 1.6 + self.width**1.2) ** 0.5
         text:root.carno
     TimeLabel:
         size_hint_x: 0.3 if root.use_ll else 0.4
@@ -21,7 +21,7 @@
         tm:root.tm
     Label:
         size_hint_x: 0.3 if root.use_ll else 0.4
-        font_size:  (self.height ** 1.9 + self.width**1.2) ** 0.5
+        font_size:  (self.height ** 1.6 + self.width**1.2) ** 0.5
         bold: True
         color:0,0,0
         text: root.rtm.strftime("%H:%M:%S") if root.is_rtm else ''
@@ -58,7 +58,7 @@
         color: 0,0,0
         size_hint_x: 0.1
         text: "RT"
-        #on_press: root.on_b3(self)
+        on_press: root.on_rt(self)
         #on_release: app.on_release(self, 2)
     RoundedButton:
         id:ll_but
@@ -144,3 +144,64 @@
 <TimeLabel>:
     font_size:  (self.height ** 1.9 + self.width**1.2) ** 0.5
     bold: True
+
+<RTimePopup>:
+    hour: hour
+    minute: minute
+    sec: second
+    auto_dismiss: False
+    title: 'Enter Restart Time'
+    size_hint: (1,0.4)
+    BoxLayout:
+        orientation: 'vertical'
+        size:self.parent.size
+        BoxLayout:
+            orientation:'horizontal'
+            size_hint_y:0.5
+            NumericInput:
+                id: hour
+                background_color: 0,0,0,0
+                foreground_color: 1,1,1,1
+                halign:'center'
+                font_size: self.height * 0.5
+                size_hint_x:0.3
+                text: f'{root.row.tm.hour:02}'
+            Label:
+                size_hint_x:0.05
+                text_size:self.size
+                text:':'
+                font_size: self.height * 0.5
+                valign:'top'
+                color:1,1,1
+            NumericInput:
+                id: minute
+                background_color: 0,0,0,0
+                foreground_color: 1,1,1,1
+                size_hint_x:0.3
+                font_size: self.height * 0.5
+                halign:'center'
+                text: f'{root.row.tm.minute:02}'
+            Label:
+                size_hint_x:0.05
+                text_size:self.size
+                font_size: self.height * 0.5
+                valign: 'top'
+                text:':'
+                color:1,1,1
+            NumericInput:
+                id:second
+                background_color: 0,0,0,0
+                foreground_color: 1,1,1,1
+                halign:'center'
+                font_size: self.height * 0.5
+                size_hint_x:0.3
+                text: f'{root.row.tm.second:02}'
+        BoxLayout:
+            size_hint_y:0.5
+            orientation:'horizontal'
+            Button:
+                text:'Confirm'
+                on_release: root.on_rtm()
+            Button:
+                text:'Cancel'
+                on_release: root.dismiss()

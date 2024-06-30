@@ -256,7 +256,7 @@ class ViewLog(Screen):
         # Adds all the events present in the logfile
         log = EventLog.select()
         for i in log:
-            self.rv.data.insert(0,{'tm':i.time, 'carno':str(i.carno), 'date':str(i.date), 'rtm': i.rtime, 'LL': i.LL, 'row':i})
+            self.rv.data.insert(0,{'tm':i.time, 'carno':str(i.carno), 'date':str(i.date), 'rtm': i.rtime, 'LL': i.LL, 'row':i,'is_rtm':i.is_rtm})
         self.prev_log = log if log.count() else None
 
     def reload(self, row = None):
@@ -269,16 +269,16 @@ class ViewLog(Screen):
                 if i not in self.prev_log:
                     print(i.LL)
                     print(i.time)
-                    self.rv.data.insert(0,{'tm':i.time, 'carno':str(i.carno), 'date':str(i.date), 'row':i, 'rtm': i.rtime, 'LL': i.LL})
+                    self.rv.data.insert(0,{'tm':i.time, 'carno':str(i.carno), 'date':str(i.date), 'row':i, 'rtm': i.rtime, 'LL': i.LL, 'is_rtm':i.is_rtm})
         else:# if there were no data in the logfile and new data was just added
             for i in new_log:
-                self.rv.data.insert(0,{'tm':i.time, 'carno':str(i.carno), 'date':str(i.date), 'row':i, 'rtm': i.rtime, 'LL': i.LL})
+                self.rv.data.insert(0,{'tm':i.time, 'carno':str(i.carno), 'date':str(i.date), 'row':i, 'rtm': i.rtime, 'LL': i.LL,'is_rtm':i.is_rtm})
 
         # this is added for change in any kind of data in a pre-existing record
         if row:
             for i in self.rv.data:
                 if row == i['row']:
-                    print(row.LL)
+                    print('reload: ',row.is_rtm)
                     index = self.rv.data.index(i)
-                    self.rv.data[index]= {'tm': row.time, 'date': str(row.date), 'carno': str(row.carno), 'row': i['row'],'rtm': row.rtime, 'LL': row.LL}
+                    self.rv.data[index]= {'tm': row.time, 'date': str(row.date), 'carno': str(row.carno), 'row': i['row'],'rtm': row.rtime, 'LL': row.LL,'is_rtm':row.is_rtm}
         self.prev_log = new_log

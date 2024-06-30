@@ -39,6 +39,23 @@ if 'offset' not in settings.options('SETTINGS'):
     settings.write()
 
 offset = settings.getfloat('SETTINGS','offset')
+
+class RTimePopup(Popup):
+    hour = ObjectProperty(None)
+    minute = ObjectProperty(None)
+    sec = ObjectProperty(None)
+    init = BooleanProperty(False)
+    def __init__(self, row,**kwargs):
+        self.row = row
+        self.init = True
+        super().__init__(**kwargs)
+
+    def on_rtm(self):
+        self.row.is_rtm = True
+        self.row.rtm = self.row.tm.replace(hour=int(self.hour.text), minute=int(self.minute.text), second=int(self.sec.text))
+        print(self.row.is_rtm)
+        self.dismiss()
+
 class LLPopup(Popup):
     def __init__(self, row,**kwargs):
         self.row = row
@@ -109,6 +126,8 @@ class RallyRow(RecycleDataViewBehavior, BoxLayout):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        if self.is_rtm:
+            self.tm = self.rtm
         self.reload_ll('SETTINGS','use_ll', None)
         settings.add_callback(self.reload_ll, 'SETTINGS','use_ll')
     def refresh_view_attrs(self, rv, index, data):
@@ -129,6 +148,7 @@ class RallyRow(RecycleDataViewBehavior, BoxLayout):
             self.prev_carno = str(row.carno)
 
         self.row_id=row_id
+        print(self.is_rtm)
 
         return super(RallyRow, self).refresh_view_attrs(rv, index, data)
 
@@ -191,6 +211,20 @@ class RallyRow(RecycleDataViewBehavior, BoxLayout):
             self.remove_widget(self.ll_but)
         elif self.use_ll and self.ll_but not in self.children:
             self.add_widget(self.ll_but)
+
+    def on_rt(self,but):
+        RTimePopup(self).open()
+
+    def on_rtm(self,instance,value):
+        if self.is_rtm:
+            self.tm = self.rtm
+            row = EventLog.select().where(EventLog.id==self.row_id).get()
+            row.is_rtm = self.is_rtm
+            row.rtime = self.rtm
+            row.save()
+            app = App.get_running_app()
+            log = app.sm.get_screen("Log")
+            log.reload(row=row)
 
 class TimeLabel(Label):
     '''Class for Labels showing only time'''

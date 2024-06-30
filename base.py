@@ -38,6 +38,10 @@ if 'offset' not in settings.options('SETTINGS'):
     settings['SETTINGS']['offset'] = '0'
     settings.write()
 
+if 'up_count' not in settings.options('SETTINGS'):
+    settings['SETTINGS']['up_count'] = '0'
+    settings.write()
+
 offset = settings.getfloat('SETTINGS','offset')
 
 class RTimePopup(Popup):
@@ -54,12 +58,26 @@ class RTimePopup(Popup):
         self.row.is_rtm = True
         self.row.rtm = self.row.tm.replace(hour=int(self.hour.text), minute=int(self.minute.text), second=int(self.sec.text))
         print(self.row.is_rtm)
+        home = App.get_running_app().sm.get_screen('Home')
+        home.upcount = 0
+        settings['SETTINGS']['up_count'] = str(0)
+        settings.write()
+        home.chg_text()
         self.dismiss()
 
 class LLPopup(Popup):
     def __init__(self, row,**kwargs):
         self.row = row
         super().__init__(**kwargs)
+
+    def on_ll(self):
+        self.row.LL = True
+        self.dismiss()
+        home = App.get_running_app().sm.get_screen('Home')
+        home.upcount = 0
+        settings['SETTINGS']['up_count'] = str(0)
+        settings.write()
+        home.chg_text()
 
 class Dialog(ModalView):
     fsz = ObjectProperty(None)
@@ -178,6 +196,11 @@ class RallyRow(RecycleDataViewBehavior, BoxLayout):
         app = App.get_running_app()
         log = app.sm.get_screen("Log")
         log.reload(row=row)
+        home = app.sm.get_screen('Home')
+        home.upcount = 0
+        settings['SETTINGS']['up_count'] = str(0)
+        settings.write()
+        home.chg_text()
 
     def on_LL(self,instance, value):
         row = EventLog.select().where(EventLog.id==self.row_id).get()
@@ -203,7 +226,6 @@ class RallyRow(RecycleDataViewBehavior, BoxLayout):
 
     def on_rtm(self,instance,value):
         if self.is_rtm:
-            self.tm = self.rtm
             row = EventLog.select().where(EventLog.id==self.row_id).get()
             row.is_rtm = self.is_rtm
             row.rtime = self.rtm

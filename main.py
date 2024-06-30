@@ -10,6 +10,7 @@ from kivy.uix.screenmanager import ScreenManager,NoTransition
 from kivy.core.window import Window
 
 class MainApp(App):
+    '''Class for the main app'''
     _color=dict()
     _rect = dict()
     sm = ScreenManager(transition=NoTransition())

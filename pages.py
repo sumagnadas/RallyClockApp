@@ -26,8 +26,16 @@ class Home(Screen):
     loc_but = ObjectProperty(None)
     sheet = None
     prev_offset = ObjectProperty(0)
+    upcount = ObjectProperty(0)
+    last_up_time = ObjectProperty(None)
+    up_info = ObjectProperty(f'Upload()')
 
     def __init__(self, **kw):
+        up_count = settings.getint('SETTINGS','up_count')
+        if up_count:
+            self.last_up_time = datetime.strptime(settings['SETTINGS']['last_up_time'],'%d/%m/%y %H:%M:%S')
+        self.upcount = up_count
+        self.chg_text()
         Clock.schedule_interval(self.update_clock, 0.1)
         super().__init__(**kw)
 
@@ -47,7 +55,6 @@ class Home(Screen):
     def on_b4(self, obj):
         '''Goes to Log Screen'''
 
-        self.manager.get_screen("Log").reload()
         self.manager.current = "Log"
         self._btnchg(obj, 3)
 
@@ -66,6 +73,13 @@ class Home(Screen):
             self.sheet = service_account(filename='credentials.json').open("Rally Clock Data").sheet1
         EventLog.upload(self.sheet)
         Dialog(self, 'Done Uploading').show()
+        now = datetime.now()
+        self.last_up_time = now
+        self.upcount +=1
+        self.chg_text()
+        settings['SETTINGS']['up_count'] = str(self.upcount)
+        settings['SETTINGS']['last_up_time'] = now.strftime("%d/%m/%y %H:%M:%S")
+        settings.write()
         self._btnchg(obj, 5)
 
     def on_set(self, obj):
@@ -73,6 +87,15 @@ class Home(Screen):
         print("settings")
         self._btnchg(obj, 6)
         print(obj)
+
+    def chg_text(self):
+        self.up_info = f'Upload({self.upcount})'
+        print("up_count:", self.upcount)
+        if self.upcount:
+            self.up_info += f"\nLast: {self.last_up_time.strftime('%H:%M:%S')}"
+        print(self.upcount)
+        print(self.up_info)
+
 
     def update_clock(self, dt):
         t1 = datetime.now()
@@ -248,12 +271,19 @@ class Page3(Screen):
         self.rv.data.insert(0, {'tm': tm.time(),'carno': '', 'LL':False, 'is_rtm': False,'rtm': None})
         self.manager.get_screen("Log").reload()
 
+        home = self.manager.get_screen('Home')
+        home.up_count = 0
+        settings['SETTINGS']['up_count'] = str(0)
+        settings.write()
+        home.chg_text()
+
 class ViewLog(Screen):
     rv = ObjectProperty(None)
     def __init__(self, **kw):
         super().__init__(**kw)
 
         # Adds all the events present in the logfile
+        # (only the row object from the database is added from which the data is sourced)
         log = EventLog.select()
         for i in log:
             self.rv.data.insert(0,{'row':i})

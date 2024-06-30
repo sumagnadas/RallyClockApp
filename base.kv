@@ -17,19 +17,20 @@
         text:str(root.row.carno) if root.row else ''
     TimeLabel:
         size_hint_x: 0.3 if root.use_ll else 0.4
+        font_size:  (self.height ** 1.8 + self.width**1.2) ** 0.5
         color: 0, 0, 0
         update:False
         tm:root.row.time if root.row else time(0,0,0)
     Label:
-        size_hint_x: 0.3 if root.use_ll else 0.4
-        font_size:  (self.height ** 1.6 + self.width**1.2) ** 0.5
-        bold: True
+        size_hint_x: 0.4 if root.use_ll else 0.5
+        font_size:  (self.height ** 1.5 + self.width**1.2) ** 0.5
+        bold:True
         color:0,0,0
         text: (root.row.rtime.strftime("%H:%M:%S") if root.row.is_rtm else '') if root.row else ''
     Label:
         bold: True
         id: ll_row
-        size_hint_x: 0.2
+        size_hint_x: 0.1
         font_size:(self.height ** 1.8 + self.width**1.2) ** 0.5
         color: 0,0,0
         text: ('No' if not root.row.LL else 'Yes') if root.row else ''
@@ -124,7 +125,7 @@
             orientation: 'horizontal'
             Button:
                 text:'Yes'
-                on_release: root.row.LL = True;root.dismiss()
+                on_release: root.on_ll()
             Button:
                 text:'No'
                 on_release: root.row.LL = False;root.dismiss()

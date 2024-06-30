@@ -81,12 +81,7 @@ class NavigationBar(BoxLayout):
 class LogRow(RecycleDataViewBehavior, BoxLayout):
     '''Class which is used as the row for displaying the events in the logfile'''
 
-    tm = ObjectProperty(time(0,0,0))
-    rtm = ObjectProperty(time(0,0,0),allownone=True)
-    is_rtm = BooleanProperty(False)
-    carno = StringProperty("0")
     row = ObjectProperty(None)
-    LL = BooleanProperty(False)
     use_ll = BooleanProperty(settings.getboolean('SETTINGS','use_ll'))
     ll_row = ObjectProperty(None)
 
@@ -158,40 +153,31 @@ class RallyRow(RecycleDataViewBehavior, BoxLayout):
         rv = app.rv# the RecycleView of the Finish screen
         log = app.sm.get_screen("Log")# the Log screen
 
+         # Find the record with id (auto-incremented integer PK for this table) and corresponding event type and set the carno to new one
+        row = EventLog.select().where(EventLog.id==self.row_id).get()
+
         if not EventLog.select().where(EventLog.carno==self.carno).count(): # See if there are any duplicates in the database
             self.wrong_car = False
-            # Find the record with id (auto-incremented integer PK for this table) and corresponding event type and set the carno to new one
-            row = EventLog.select().where(EventLog.id==self.row_id).get()
-            row.carno = self.carno
-            row.save()
-
-            # Set the new carno in the view
-            rv.data[self.index]['carno'] = self.carno
-
             # Save the new carno in the database and update the prev_carno to the current one
             self.prev_carno = self.carno
-
-            # Reload the Log with the new row changes
-            log.reload(row=row)
         else:
             self.wrong_car = True
-            # If there is a duplicate, show a popup(Not yet implemented) which confirms whether the user wants to keep it
+            # If there is a duplicate, show a popup which confirms whether the user wants to keep it
             # If user confirms to keep it, then the carno will be set in the process in above if condition
             # If user declines, then the carno input will be returned to the previous carno and asked to enter another one
             self.carno = ''
 
-            row = EventLog.select().where(EventLog.id==self.row_id).get()
-            row.carno = self.carno
-            row.save()
-
-            # Set the new carno in the view
-            rv.data[self.index]['carno'] = self.carno
-
-            # Reload the Log with the new row changes
-            log.reload(row=row)
             dia = Dialog(app.sm.get_screen("Page3"), "Duplicate")
             dia.pos_hint = {'center_x':0.5, 'center_y':0.9}
             dia.show()
+        row.carno = self.carno
+        row.save()
+        # Set the new carno in the view
+        rv.data[self.index]['carno'] = self.carno
+
+        app = App.get_running_app()
+        log = app.sm.get_screen("Log")
+        log.reload(row=row)
 
     def on_LL(self,instance, value):
         row = EventLog.select().where(EventLog.id==self.row_id).get()

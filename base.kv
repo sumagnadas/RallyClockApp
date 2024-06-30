@@ -1,4 +1,5 @@
 #: kivy 2.0.0
+#:import time datetime.time
 #:import now datetime.datetime
 
 <LogRow>:
@@ -13,25 +14,25 @@
         color: 0, 0, 0
         bold: True
         font_size:(self.height ** 1.6 + self.width**1.2) ** 0.5
-        text:root.carno
+        text:str(root.row.carno) if root.row else ''
     TimeLabel:
         size_hint_x: 0.3 if root.use_ll else 0.4
         color: 0, 0, 0
         update:False
-        tm:root.tm
+        tm:root.row.time if root.row else time(0,0,0)
     Label:
         size_hint_x: 0.3 if root.use_ll else 0.4
         font_size:  (self.height ** 1.6 + self.width**1.2) ** 0.5
         bold: True
         color:0,0,0
-        text: root.rtm.strftime("%H:%M:%S") if root.is_rtm else ''
+        text: (root.row.rtime.strftime("%H:%M:%S") if root.row.is_rtm else '') if root.row else ''
     Label:
         bold: True
         id: ll_row
         size_hint_x: 0.2
         font_size:(self.height ** 1.8 + self.width**1.2) ** 0.5
         color: 0,0,0
-        text: 'No' if not root.LL else 'Yes'
+        text: ('No' if not root.row.LL else 'Yes') if root.row else ''
 <RallyRow>:
     ll_but:ll_but.__self__
     car: car

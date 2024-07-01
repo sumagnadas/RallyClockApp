@@ -160,8 +160,10 @@
         BoxLayout:
             orientation:'horizontal'
             size_hint_y:0.5
-            NumericInput:
+            RTimeInput:
                 id: hour
+                pop:root.__self__
+                tm:root.tm
                 background_color: 0,0,0,0
                 foreground_color: 1,1,1,1
                 halign:'center'
@@ -175,8 +177,10 @@
                 font_size: self.height * 0.5
                 valign:'top'
                 color:1,1,1
-            NumericInput:
+            RTimeInput:
                 id: minute
+                pop:root.__self__
+                tm:root.tm
                 background_color: 0,0,0,0
                 foreground_color: 1,1,1,1
                 size_hint_x:0.3
@@ -190,8 +194,10 @@
                 valign: 'top'
                 text:':'
                 color:1,1,1
-            NumericInput:
+            RTimeInput:
                 id:second
+                pop:root.__self__
+                tm:root.tm
                 background_color: 0,0,0,0
                 foreground_color: 1,1,1,1
                 halign:'center'

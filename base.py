@@ -17,7 +17,7 @@ from kivy.uix.popup import Popup
 from kivy.uix.modalview import ModalView
 from kivy.config import ConfigParser
 
-from datetime import datetime,time, timedelta
+from datetime import datetime, time, timedelta, date
 from models import EventLog, settings_file
 
 Builder.load_file('base.kv')
@@ -51,19 +51,24 @@ class RTimePopup(Popup):
     init = BooleanProperty(False)
     def __init__(self, row,**kwargs):
         self.row = row
+        self.tm = self.row.tm
         self.init = True
         super().__init__(**kwargs)
 
     def on_rtm(self):
-        self.row.is_rtm = True
-        self.row.rtm = self.row.tm.replace(hour=int(self.hour.text), minute=int(self.minute.text), second=int(self.sec.text))
-        print(self.row.is_rtm)
-        home = App.get_running_app().sm.get_screen('Home')
-        home.upcount = 0
-        settings['SETTINGS']['up_count'] = str(0)
-        settings.write()
-        home.chg_text()
-        self.dismiss()
+        new_tm = time(int(self.hour.text),int(self.minute.text),int(self.sec.text))
+        if self.row.tm > new_tm:
+                Dialog(self.parent, text="Invalid RTime").open()
+        else:
+            self.row.is_rtm = True
+            self.row.rtm = time(int(self.hour.text), int(self.minute.text), int(self.sec.text))
+            print(self.row.is_rtm)
+            home = App.get_running_app().sm.get_screen('Home')
+            home.upcount = 0
+            settings['SETTINGS']['up_count'] = str(0)
+            settings.write()
+            home.chg_text()
+
 
 class LLPopup(Popup):
     def __init__(self, row,**kwargs):
@@ -122,6 +127,28 @@ class NumericInput(TextInput):
         self.input_type='number' # (For android) Show the numeric keyboard for input
         self.input_filter='int'
 
+class RTimeInput(NumericInput):
+    tm = ObjectProperty(None)
+    pop = ObjectProperty(None)
+    def insert_text(self, substring: str, from_undo=False):
+        text = self.text + substring
+        if len(text) >2:
+            substring = ''
+        elif self.tm and self.pop and substring.isnumeric():
+            if self == self.pop.hour:
+                    if int(text) >= 24:
+                        substring = ''
+                    print("hour: ",self.tm.hour)
+            elif self == self.pop.minute:
+                    if int(text) >= 60:
+                        substring = ''
+                    print("minute: ",self.text)
+            elif self == self.pop.sec:
+                    if int(text) >= 60:
+                        substring = ''
+                    print("second: ",self.text)
+        return super().insert_text(substring, from_undo)
+    pass
 class RallyRow(RecycleDataViewBehavior, BoxLayout):
     ''' Class which is used as the row for showing data in the Finish data capture list'''
 

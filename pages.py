@@ -16,6 +16,7 @@ from datetime import datetime, timedelta
 from ntplib import NTPClient, NTPException
 
 ntp = NTPClient()
+time_servers = ['time.google.com','time.facebook.com','time.apple.com','pool.ntp.org','time.cloudflare.com',]
 
 Builder.load_file("pages.kv")
 
@@ -90,12 +91,8 @@ class Home(Screen):
 
     def chg_text(self):
         self.up_info = f'Upload({self.upcount})'
-        print("up_count:", self.upcount)
         if self.upcount:
-            self.up_info += f"\nLast: {self.last_up_time.strftime('%H:%M:%S')}"
-        print(self.upcount)
-        print(self.up_info)
-
+            self.up_info += "\n" + self.last_up_time.strftime('%H:%M:%S')
 
     def update_clock(self, dt):
         t1 = datetime.now()
@@ -116,11 +113,13 @@ class SetPage(Screen):
 
     def erase_log(self):
         EventLog.delete().execute()
-        self.manager.get_screen("Log").rv.data = list()
+        log = self.manager.get_screen("Log")
+        log.rv.data = list()
         self.manager.get_screen("Page3").rv.data = list()
+        log.prev_log = None
 
         home = self.manager.get_screen('Home')
-        home.up_count = 0
+        home.upcount = 0
         settings['SETTINGS']['up_count'] = str(0)
         settings.write()
         home.chg_text()
@@ -136,16 +135,19 @@ class SetPage(Screen):
         settings.write()
 
     def sync(self):
-        try:
-            response = ntp.request('pool.ntp.org')
-            global offset
-            offset = response.offset
-            print(offset)
-            settings['SETTINGS']['offset'] = str(offset)
-            settings.write()
-            Dialog(self, '-Done-').open()
-        except NTPException:
-            Dialog(self, "Done").open()
+        for server in time_servers:
+            try:
+                response = ntp.request(server)
+                global offset
+                offset = response.offset
+                print(server)
+                settings['SETTINGS']['offset'] = str(offset)
+                settings.write()
+                Dialog(self, '-Done-').open()
+                return 1
+            except NTPException:
+                continue
+        Dialog(self, "Done").open()
 
 class StageSel(Screen):
     '''Class for Stage, Rally Day selection Screen'''
@@ -285,7 +287,7 @@ class Page3(Screen):
         self.manager.get_screen("Log").reload()
 
         home = self.manager.get_screen('Home')
-        home.up_count = 0
+        home.upcount = 0
         settings['SETTINGS']['up_count'] = str(0)
         settings.write()
         home.chg_text()

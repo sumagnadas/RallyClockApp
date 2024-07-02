@@ -27,7 +27,9 @@ if settings.sections() == []:
     settings['SETTINGS'] = {'stage': "Time Control In",
                             'day': '1',
                             'stg_no': '1',
-                            'use_ll': 'True'}
+                            'use_ll': 'True',
+                            'up_count': '0',
+                            'use_rt': 'True'}
     settings.write()
 
 if 'use_ll' not in settings.options('SETTINGS'):
@@ -40,6 +42,10 @@ if 'offset' not in settings.options('SETTINGS'):
 
 if 'up_count' not in settings.options('SETTINGS'):
     settings['SETTINGS']['up_count'] = '0'
+    settings.write()
+
+if 'use_rt' not in settings.options('SETTINGS'):
+    settings['SETTINGS']['use_rt'] = 'True'
     settings.write()
 
 offset = settings.getfloat('SETTINGS','offset')
@@ -107,12 +113,16 @@ class LogRow(RecycleDataViewBehavior, BoxLayout):
 
     row = ObjectProperty(None)
     use_ll = BooleanProperty(settings.getboolean('SETTINGS','use_ll'))
+    use_rt = BooleanProperty(settings.getboolean('SETTINGS','use_rt'))
     ll_row = ObjectProperty(None)
+    rt_row = ObjectProperty(None)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.reload_ll('SETTINGS','use_ll', None)
+        self.reload_rt('SETTINGS','use_rt', None)
         settings.add_callback(self.reload_ll, 'SETTINGS','use_ll')
+        settings.add_callback(self.reload_rt, 'SETTINGS','use_rt')
 
     def reload_ll(self,section, key,value):
         self.use_ll = settings.getboolean(section,key)
@@ -120,6 +130,16 @@ class LogRow(RecycleDataViewBehavior, BoxLayout):
             self.remove_widget(self.ll_row)
         elif self.use_ll and self.ll_row not in self.children:
             self.add_widget(self.ll_row)
+
+    def reload_rt(self,section, key,value):
+        self.use_rt = settings.getboolean(section,key)
+        print("Value:", self.use_rt)
+        print(self.rt_row)
+        print(self.children)
+        if not self.use_rt and self.rt_row in self.children:
+            self.remove_widget(self.rt_row)
+        elif self.use_rt and self.rt_row not in self.children:
+            self.add_widget(self.rt_row)
 
 class NumericInput(TextInput):
     def __init__(self, **kwargs):
@@ -164,13 +184,18 @@ class RallyRow(RecycleDataViewBehavior, BoxLayout):
     row = None
     row_id = NumericProperty(0)
     wrong_car = BooleanProperty(False)
+    rt_but = ObjectProperty(None)
+    use_rt = BooleanProperty(settings.getboolean('SETTINGS','use_rt'))
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         if self.is_rtm:
             self.tm = self.rtm
         self.reload_ll('SETTINGS','use_ll', None)
+        self.reload_rt('SETTINGS','use_rt', None)
+        settings.add_callback(self.reload_rt, 'SETTINGS','use_rt')
         settings.add_callback(self.reload_ll, 'SETTINGS','use_ll')
+
     def refresh_view_attrs(self, rv, index, data):
         ''' Catch and handle the view changes '''
         data_rv = rv.data
@@ -248,6 +273,13 @@ class RallyRow(RecycleDataViewBehavior, BoxLayout):
             self.remove_widget(self.ll_but)
         elif self.use_ll and self.ll_but not in self.children:
             self.add_widget(self.ll_but)
+
+    def reload_rt(self,section, key,value):
+        self.use_rt = settings.getboolean(section,key)
+        if not self.use_rt and self.rt_but in self.children:
+            self.remove_widget(self.rt_but)
+        elif self.use_rt and self.rt_but not in self.children:
+            self.add_widget(self.rt_but)
 
     def on_rt(self,but):
         RTimePopup(self).open()

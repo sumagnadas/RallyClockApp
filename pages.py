@@ -108,9 +108,11 @@ class Home(Screen):
 
 class SetPage(Screen):
     use_ll = ObjectProperty(None)
+    use_rt = ObjectProperty(None)
     def __init__(self, **kw):
         super().__init__(**kw)
         self.use_ll.active = settings.getboolean('SETTINGS','use_ll')
+        self.use_rt.active = settings.getboolean('SETTINGS','use_rt')
 
     def erase_log(self):
         EventLog.delete().execute()
@@ -125,8 +127,12 @@ class SetPage(Screen):
 
         Dialog(self, 'Done Erasing').show()
 
-    def on_active(self,value):
+    def on_ll_active(self,value):
         settings['SETTINGS']['use_ll'] = str(value)
+        settings.write()
+
+    def on_rt_active(self,value):
+        settings['SETTINGS']['use_rt'] = str(value)
         settings.write()
 
     def sync(self):

@@ -4,11 +4,12 @@
 
 <LogRow>:
     ll_row: ll_row.__self__
+    rt_row: rt_row.__self__
     orientation: 'horizontal'
     padding:10,10
     spacing: 20
     Label:
-        size_hint_x: 0.2
+        size_hint_x: 0.2 + 0.2 * int(root.use_rt)
         text_size: self.size
         halign: 'left'
         color: 0, 0, 0
@@ -16,15 +17,16 @@
         font_size:(self.height ** 1.6 + self.width**1.2) ** 0.5
         text:str(root.row.carno) if root.row else ''
     TimeLabel:
-        size_hint_x: 0.3 if root.use_ll else 0.4
+        size_hint_x: 0.3 + 0.1 * int(root.use_ll) + 0.2 * int(root.use_rt)
         font_size:  (self.height ** 1.8 + self.width**1.2) ** 0.5
         color: 0, 0, 0
         update:False
         tm:root.row.time if root.row else time(0,0,0)
     Label:
+        bold:True
+        id:rt_row
         size_hint_x: 0.4 if root.use_ll else 0.5
         font_size:  (self.height ** 1.5 + self.width**1.2) ** 0.5
-        bold:True
         color:0,0,0
         text: (root.row.rtime.strftime("%H:%M:%S") if root.row.is_rtm else '') if root.row else ''
     Label:
@@ -36,6 +38,7 @@
         text: ('No' if not root.row.LL else 'Yes') if root.row else ''
 <RallyRow>:
     ll_but:ll_but.__self__
+    rt_but:rt_but.__self__
     car: car
     carno: car.text
     orientation: 'horizontal'
@@ -46,17 +49,18 @@
         #background_color: 1,1,1,1
         id: car
         text:root.carno
-        size_hint_x: 0.2 if root.use_ll else 0.25
+        size_hint_x: 0.2 + 0.05 * (int(root.use_ll) +int(root.use_rt))
         font_size: self.height * 0.6
         size: self.size
         on_text_validate: root.on_enter()
     TimeLabel:
-        size_hint_x: 0.6 if root.use_ll else 0.65
+        size_hint_x: 0.6 + 0.05 * (int(root.use_ll) +int(root.use_rt))
         color: 0, 0, 0
         id: tm
         update:False
         tm:root.tm
     RoundedButton:
+        id:rt_but
         color: 0,0,0
         size_hint_x: 0.1
         text: "RT"

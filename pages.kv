@@ -127,6 +127,7 @@
 
 <SetPage>:
     use_ll: use_ll
+    use_rt: use_rt
     canvas.before:
         Color:
             rgb: 1,1,1
@@ -165,10 +166,25 @@
                 Switch:
                     id: use_ll
                     size_hint_x:0.3
-                    on_active: root.on_active(self.active)
+                    on_active: root.on_ll_active(self.active)
+            BoxLayout:
+                orientation:'horizontal'
+                padding: 10, 10
+                spacing: 10
+                size_hint_y:0.1
+                Label:
+                    size_hint_x:0.7
+                    text_size:self.size
+                    halign: 'center'
+                    color: 0,0,0
+                    text:'Use Restart Time'
+                Switch:
+                    id: use_rt
+                    size_hint_x:0.3
+                    on_active: root.on_rt_active(self.active)
             Label:
                 underline:True
-                size_hint_y:0.7
+                size_hint_y:0.6
                 markup: True
                 text_size:self.size
                 bold: True

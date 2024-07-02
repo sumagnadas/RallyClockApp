@@ -116,6 +116,13 @@ class SetPage(Screen):
         EventLog.delete().execute()
         self.manager.get_screen("Log").rv.data = list()
         self.manager.get_screen("Page3").rv.data = list()
+
+        home = self.manager.get_screen('Home')
+        home.up_count = 0
+        settings['SETTINGS']['up_count'] = str(0)
+        settings.write()
+        home.chg_text()
+
         Dialog(self, 'Done Erasing').show()
 
     def on_active(self,value):

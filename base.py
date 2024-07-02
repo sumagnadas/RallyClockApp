@@ -68,6 +68,7 @@ class RTimePopup(Popup):
             settings['SETTINGS']['up_count'] = str(0)
             settings.write()
             home.chg_text()
+            self.dismiss()
 
 
 class LLPopup(Popup):

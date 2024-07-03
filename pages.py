@@ -106,8 +106,13 @@ class Home(Screen):
 class SetPage(Screen):
     use_ll = ObjectProperty(None)
     use_rt = ObjectProperty(None)
+    sync_but = ObjectProperty(None)
+
     def __init__(self, **kw):
         super().__init__(**kw)
+
+        self.on_offset('SETTINGS','offset', offset)
+        settings.add_callback(self.on_offset, 'SETTINGS','offset')
         self.use_ll.active = settings.getboolean('SETTINGS','use_ll')
         self.use_rt.active = settings.getboolean('SETTINGS','use_rt')
 
@@ -133,6 +138,9 @@ class SetPage(Screen):
     def on_rt_active(self,value):
         settings['SETTINGS']['use_rt'] = str(value)
         settings.write()
+
+    def on_offset(self,sec,key,value):
+        self.sync_but.text = f'Sync\nOffset from local time: {float(value):.02f}s'
 
     def sync(self):
         for server in time_servers:

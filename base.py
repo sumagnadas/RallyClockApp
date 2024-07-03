@@ -314,11 +314,12 @@ class TimeLabel(Label):
             Clock.schedule_interval(self.update_clock, 1/60)
         else:
             self.event.cancel()
-            self.time = time(0,0,0)
+            self.tm = time(0,0,0)
 
     def update_clock(self, dt):
         '''Sets the Label text to the current time if the update property is true'''
 
+        offset = settings.getfloat('SETTINGS','offset')
         t1 = datetime.now()
         tm = datetime.now() + timedelta(seconds=offset,microseconds=self.prev_offset)
         t2 = datetime.now()

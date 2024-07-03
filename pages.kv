@@ -128,6 +128,7 @@
 <SetPage>:
     use_ll: use_ll
     use_rt: use_rt
+    sync_but:sync_but
     canvas.before:
         Color:
             rgb: 1,1,1
@@ -143,8 +144,12 @@
             padding: 10, 10
             spacing: 10
             RoundedButton:
+                id:sync_but
                 color:0,0,0
                 bold: True
+                text_size:self.size
+                valign:'center'
+                halign: 'center'
                 size_hint_y:0.1
                 text: 'Sync Time'
                 on_release: root.sync()

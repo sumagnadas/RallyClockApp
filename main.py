@@ -8,11 +8,12 @@ from kivy.app import App
 from pages import Home, Page3, StageSel, ViewLog, SetPage
 from kivy.uix.screenmanager import ScreenManager,NoTransition
 from kivy.core.window import Window
+from kivy.clock import Clock
+from base import update_clock
 
 class MainApp(App):
+
     '''Class for the main app'''
-    _color=dict()
-    _rect = dict()
     sm = ScreenManager(transition=NoTransition())
     use_kivy_settings = False
 
@@ -25,6 +26,7 @@ class MainApp(App):
         self.sm.add_widget(ViewLog(name="Log"))
         self.sm.add_widget(SetPage(name='Settings'))
         self.rv = self.sm.get_screen('Page3').rv
+        Clock.schedule_interval(update_clock, 0.1)
 
         win = Window
         win.bind(on_keyboard=self.my_key_handler)
@@ -38,11 +40,6 @@ class MainApp(App):
                 self.sm.current = 'Home'
                 return True
         return False
-
-    def on_release(self, obj, i):
-        obj.canvas.remove(self._color[i])
-        obj.canvas.remove(self._rect[i])
-
 
 if __name__=="__main__":
     MainApp().run()

@@ -44,7 +44,6 @@ class EventLog(Model):
             LL = 'Yes' if i.LL else 'No'
             data.append(['' if not i.carno else str(i.carno), str(i.time), rtime, LL, i.location, str(i.date)])
         sheet.append_rows(data)
-        print("Done")
 
 
 if db.get_tables() == []:# if the table doesn't exist, then create one
@@ -52,7 +51,6 @@ if db.get_tables() == []:# if the table doesn't exist, then create one
 
 # Backwards compatibility
 cols = [i.name for i in db.get_columns('eventlog')]
-print(cols)
 if 'rtime' in cols:
     mg = SqliteMigrator(db)
     migrate(mg.alter_column_type('eventlog','rtime',TimeField(null=True)))

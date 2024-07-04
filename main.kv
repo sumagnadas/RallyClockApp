@@ -24,8 +24,7 @@
             size_hint_y: 0.15
             bold:True
             text: "Time Capture"
-            on_press: root.on_b3(self)
-            on_release: app.on_release(self, 2)
+            on_release: root.manager.current = "Page3"
             font_size:  (self.height ** 1.2 + self.width ** 1.2) ** 0.5
         BoxLayout:
             size_hint_y: 0.15
@@ -34,8 +33,7 @@
                 color: 0,0,0
                 text: 'Log'
                 bold:True
-                on_press: root.on_b4(self)
-                on_release: app.on_release(self, 3)
+                on_release: root.on_log(self)
                 font_size:  (self.height ** 1.2 + self.width ** 1.2) ** 0.5
             RoundedButton:
                 id: loc_but
@@ -43,15 +41,13 @@
                 halign: 'center'
                 bold:True
                 text: 'Location\nD1-TC-01'
-                on_press: root.on_b5(self)
-                on_release: app.on_release(self, 4)
+                on_release: root.manager.current = "StageSel"
                 font_size:  (self.height ** 1.2 + self.width ** 1.2) ** 0.5
             RoundedButton:
                 color: 0,0,0
                 text: root.up_info
                 bold:True
-                on_press: root.on_b6(self)
-                on_release: app.on_release(self, 5)
+                on_release: root.on_upload(self)
                 font_size:  (self.height ** 1.2 + self.width ** 1.2) ** 0.5
         Label:
             id: tm1
@@ -80,8 +76,7 @@
                 text_size: self.size
                 valign: 'middle'
                 halign: 'center'
-                on_press: root.on_set(self)
-                on_release: app.on_release(self, 6)
+                on_release: root.manager.current = "Settings"
             Widget:
                 size_hint_x:0.35
                 color: 0,0,0

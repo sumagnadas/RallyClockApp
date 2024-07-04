@@ -5,67 +5,54 @@ are shown to user as they interact with the app
 
 from kivy.app import App
 from kivy.base import Builder
-from kivy.clock import Clock
 from kivy.properties import ObjectProperty, BooleanProperty
-from kivy.uix.screenmanager import Screen
 from kivy.graphics import Color, RoundedRectangle
+from kivy.uix.screenmanager import Screen
 from models import EventLog
-from base import Dialog, settings, offset
+from base import Dialog, settings, offset, update_objs
 from gspread import service_account
 from datetime import datetime, timedelta
 from ntplib import NTPClient, NTPException
 
 ntp = NTPClient()
-time_servers = ['time.google.com','time.facebook.com','time.apple.com','pool.ntp.org','time.cloudflare.com',]
+time_servers = ['time.google.com', # Stratum 1
+                'time.facebook.com', # Stratum 1
+                'time.apple.com', # Stratum 1
+                'pool.ntp.org', # Stratum 2
+                'time.cloudflare.com']# Stratum 2
 
 Builder.load_file("pages.kv")
 
 class Home(Screen):
     '''Class for the Home page which is shown on opening the app'''
-    tm1 = ObjectProperty(None)
-    tm2 = ObjectProperty(None)
-    loc_but = ObjectProperty(None)
-    sheet = None
-    prev_offset = ObjectProperty(0)
-    upcount = ObjectProperty(0)
-    last_up_time = ObjectProperty(None)
-    up_info = ObjectProperty(f'Upload()')
+
+    tm1 = ObjectProperty(None) # Hours, Minutes label of the clock on Home screen
+    tm2 = ObjectProperty(None) # Minutes label of the clock on Home screen
+    loc_but = ObjectProperty(None) # Stage selection screen button
+    sheet = None # Google sheet to which the data is going to be uploaded
+    upcount = ObjectProperty(0) # Number of uploads since last change
+    last_up_time = ObjectProperty(None) # Recent upload time
+    up_info = ObjectProperty(f'Upload(0)') # text on the upload button
+    tm = ObjectProperty(datetime(1,1,1,0,0,0)) # Stores the time for the home clock
 
     def __init__(self, **kw):
+
+        update_objs.append(self)
         up_count = settings.getint('SETTINGS','up_count')
+        settings.add_callback(self.chg_text,'SETTINGS','up_count')
         if up_count:
             self.last_up_time = datetime.strptime(settings['SETTINGS']['last_up_time'],'%d/%m/%y %H:%M:%S')
-        self.upcount = up_count
-        self.chg_text()
-        Clock.schedule_interval(self.update_clock, 0.1)
+        self.chg_text(val=up_count) # changes the upload button to include relevant info
+
         super().__init__(**kw)
 
-    def _btnchg(self, obj,i):
-        '''Changes the color of the RoundedButton when pressed(due to custom layout, there is no appearance change of button when it is pressed by the user)'''
-
-        with obj.canvas:
-            App.get_running_app()._color[i] = Color(200/255, 228/255, 244/255,0.5)
-            App.get_running_app()._rect[i] = RoundedRectangle(pos=obj.pos, size=obj.size)
-
-    def on_b3(self, obj):
-        '''Goes to Page3 Screen'''
-
-        self.manager.current = "Page3"
-        self._btnchg(obj, 2)
-
-    def on_b4(self, obj):
+    def on_log(self, obj):
         '''Goes to Log Screen'''
 
+        self.manager.get_screen("Log").reload()
         self.manager.current = "Log"
-        self._btnchg(obj, 3)
 
-    def on_b5(self, obj):
-        '''Goes to Stage Selection Screen'''
-
-        self.manager.current = "StageSel"
-        self._btnchg(obj, 4)
-
-    def on_b6(self, obj):
+    def on_upload(self, obj):
         '''
         Uploads the data to the Google Sheets where itcan be downloaded from and post-processed
         '''
@@ -76,58 +63,49 @@ class Home(Screen):
         Dialog(self, 'Done Uploading').show()
         now = datetime.now()
         self.last_up_time = now
-        self.upcount +=1
-        self.chg_text()
-        settings['SETTINGS']['up_count'] = str(self.upcount)
         settings['SETTINGS']['last_up_time'] = now.strftime("%d/%m/%y %H:%M:%S")
+        settings['SETTINGS']['up_count'] = str(self.upcount)
         settings.write()
-        self._btnchg(obj, 5)
 
-    def on_set(self, obj):
-        self.manager.current = "Settings"
-        print("settings")
-        self._btnchg(obj, 6)
-        print(obj)
-
-    def chg_text(self):
-        self.up_info = f'Upload({self.upcount})'
-        if self.upcount:
+    def chg_text(self,s = None,k = None,val = None):
+        '''
+        Changes the text of the Upload button to include extra data like number of
+        upload attempts and last upload time
+        '''
+        upcount = int(val)
+        self.up_info = f'Upload({upcount})'
+        if upcount:
             self.up_info += "\n" + self.last_up_time.strftime('%H:%M:%S')
 
-    def update_clock(self, dt):
-        t1 = datetime.now()
-        tm = datetime.now() + timedelta(seconds=offset,microseconds=self.prev_offset)
-        t2 = datetime.now()
-        self.prev_offset = (t2 - t1).microseconds
-        time = tm.time()
-        self.tm1.text = time.strftime("%H:%M")
-        self.tm2.text = time.strftime("%S")
+    def on_tm(self, ins, val):
+        '''Adds an offset to the local time to sync it to the NTP server'''
+
+        self.tm1.text = self.tm.strftime("%H:%M")
+        self.tm2.text = self.tm.strftime("%S")
 
 class SetPage(Screen):
-    use_ll = ObjectProperty(None)
-    use_rt = ObjectProperty(None)
-    sync_but = ObjectProperty(None)
+    '''Class for Settings/More Options screen which contains several options for using the app'''
+
+    use_ll = ObjectProperty(None) # State of Use Lifeline slider
+    use_rt = ObjectProperty(None) # State of Use Restart time slider
+    sync_but = ObjectProperty(None) # Sync Button
 
     def __init__(self, **kw):
         super().__init__(**kw)
 
-        self.on_offset('SETTINGS','offset', offset)
-        settings.add_callback(self.on_offset, 'SETTINGS','offset')
         self.use_ll.active = settings.getboolean('SETTINGS','use_ll')
         self.use_rt.active = settings.getboolean('SETTINGS','use_rt')
 
+        self.on_offset('SETTINGS','offset', offset) # Change the offset if it is present
+        settings.add_callback(self.on_offset, 'SETTINGS','offset')
+
     def erase_log(self):
         EventLog.delete().execute()
-        log = self.manager.get_screen("Log")
-        log.rv.data = list()
-        self.manager.get_screen("Page3").rv.data = list()
-        log.prev_log = None
+        self.manager.get_screen("Page3").rv.data = list() # Clear the Time Capture Screen
 
-        home = self.manager.get_screen('Home')
-        home.upcount = 0
+        # Reset the upload count and info (not in sync with last uploaded data)
         settings['SETTINGS']['up_count'] = str(0)
         settings.write()
-        home.chg_text()
 
         Dialog(self, 'Done Erasing').show()
 
@@ -143,7 +121,9 @@ class SetPage(Screen):
         self.sync_but.text = f'Sync\nOffset from local time: {float(value):.02f}s'
 
     def sync(self):
-        for server in time_servers:
+        '''Sync the time to an NTP server'''
+
+        for server in time_servers: # try different servers for time syncing
             try:
                 response = ntp.request(server)
                 global offset
@@ -152,10 +132,11 @@ class SetPage(Screen):
                 settings['SETTINGS']['offset'] = str(offset)
                 settings.write()
                 Dialog(self, '-Done-').open()
-                return 1
+                return 0 # exit the function if the time was synced
             except NTPException:
                 continue
-        Dialog(self, "Done").open()
+        Dialog(self, "Done").open() # For debugging purposes (only shown if the time couldn't be synced)
+        return 1
 
 class StageSel(Screen):
     '''Class for Stage, Rally Day selection Screen'''
@@ -294,42 +275,17 @@ class Page3(Screen):
         self.rv.data.insert(0, {'tm': tm.time(),'carno': '', 'LL':False, 'is_rtm': False,'rtm': None})
         self.manager.get_screen("Log").reload()
 
-        home = self.manager.get_screen('Home')
-        home.upcount = 0
         settings['SETTINGS']['up_count'] = str(0)
         settings.write()
-        home.chg_text()
 
 class ViewLog(Screen):
+    '''Log screen'''
     rv = ObjectProperty(None)
-    def __init__(self, **kw):
-        super().__init__(**kw)
-
-        # Adds all the events present in the logfile
-        # (only the row object from the database is added from which the data is sourced)
-        log = EventLog.select()
-        for i in log:
-            self.rv.data.insert(0,{'row':i})
-        self.prev_log = log if log.count() else None
-
-    def reload(self, row = None):
+    def reload(self):
         '''Adds the row into the Log Screen after a data capture is done of any event type (starting/finish)'''
 
-        new_log = EventLog.select()
+        log = EventLog.select()
 
-        if self.prev_log:# if there was data in the logfile
-            for i in new_log:
-                if i not in self.prev_log:
-                    self.rv.data.insert(0,{'row':i})
-        else:# if there were no data in the logfile and new data was just added
-            for i in new_log:
-                self.rv.data.insert(0,{'row':i})
-
-        # this is added for change in any kind of data in a pre-existing record
-        if row:
-            for i in self.rv.data:
-                if row == i['row']:
-                    index = self.rv.data.index(i)
-                    self.rv.data.pop(index)
-                    self.rv.data.insert(index,{'row':row})
-        self.prev_log = new_log
+        self.rv.data = list()
+        for i in log:
+            self.rv.data.insert(0,{'carno':i.carno,'rtime':i.rtime,'tm':i.time,'LL':i.LL,'is_rtm':i.is_rtm})

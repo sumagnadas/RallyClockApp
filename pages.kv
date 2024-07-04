@@ -166,19 +166,6 @@
                 size_hint_y:0.1
                 Label:
                     size_hint_x:0.7
-                    color: 0,0,0
-                    text:'Use Lifeline'
-                Switch:
-                    id: use_ll
-                    size_hint_x:0.3
-                    on_active: root.on_ll_active(self.active)
-            BoxLayout:
-                orientation:'horizontal'
-                padding: 10, 10
-                spacing: 10
-                size_hint_y:0.1
-                Label:
-                    size_hint_x:0.7
                     text_size:self.size
                     halign: 'center'
                     valign: 'center'
@@ -188,6 +175,19 @@
                     id: use_rt
                     size_hint_x:0.3
                     on_active: root.on_rt_active(self.active)
+            BoxLayout:
+                orientation:'horizontal'
+                padding: 10, 10
+                spacing: 10
+                size_hint_y:0.1
+                Label:
+                    size_hint_x:0.7
+                    color: 0,0,0
+                    text:'Use Lifeline'
+                Switch:
+                    id: use_ll
+                    size_hint_x:0.3
+                    on_active: root.on_ll_active(self.active)
             Label:
                 underline:True
                 size_hint_y:0.6

@@ -9,33 +9,33 @@
     padding:10,10
     spacing: 20
     Label:
-        size_hint_x: 0.2 + 0.2 * int(root.use_rt)
+        size_hint_x: 0.2 + 0.2 * int(not root.use_rt)
         text_size: self.size
         halign: 'left'
         color: 0, 0, 0
         bold: True
         font_size:(self.height ** 1.6 + self.width**1.2) ** 0.5
-        text:str(root.row.carno) if root.row else ''
+        text:str(root.carno) if root.carno else ''
     TimeLabel:
-        size_hint_x: 0.3 + 0.1 * int(root.use_ll) + 0.2 * int(root.use_rt)
+        size_hint_x: 0.3 + 0.1 * int(not root.use_ll) + 0.2 * int(not root.use_rt)
         font_size:  (self.height ** 1.8 + self.width**1.2) ** 0.5
         color: 0, 0, 0
         update:False
-        tm:root.row.time if root.row else time(0,0,0)
+        tm:root.tm
     Label:
         bold:True
         id:rt_row
         size_hint_x: 0.4 if root.use_ll else 0.5
         font_size:  (self.height ** 1.5 + self.width**1.2) ** 0.5
         color:0,0,0
-        text: (root.row.rtime.strftime("%H:%M:%S") if root.row.is_rtm else '') if root.row else ''
+        text: root.rtime.strftime("%H:%M:%S") if root.is_rtm else ''
     Label:
         bold: True
         id: ll_row
         size_hint_x: 0.1
         font_size:(self.height ** 1.8 + self.width**1.2) ** 0.5
         color: 0,0,0
-        text: ('No' if not root.row.LL else 'Yes') if root.row else ''
+        text: 'No' if not root.LL else 'Yes'
 <RallyRow>:
     ll_but:ll_but.__self__
     rt_but:rt_but.__self__
@@ -46,7 +46,6 @@
     spacing: 20
     NumericInput:
         text_validate_unfocus: not root.wrong_car
-        #background_color: 1,1,1,1
         id: car
         text:root.carno
         size_hint_x: 0.2 + 0.05 * (int(root.use_ll) +int(root.use_rt))
@@ -64,15 +63,13 @@
         color: 0,0,0
         size_hint_x: 0.1
         text: "RT"
-        on_press: root.on_rt(self)
-        #on_release: app.on_release(self, 2)
+        on_release: root.on_rt(self)
     RoundedButton:
         id:ll_but
         color: 0,0,0
         size_hint_x: 0.1
         text: "LL"
-        on_press: root.on_ll()
-        #on_release: app.on_release(self, 2)
+        on_release: root.on_ll()
 
 <RV>:
     RecycleBoxLayout:
@@ -109,15 +106,14 @@
         font_size: (self.height ** 1.9 + self.width**1.2) ** 0.5
         text: 'Back'
         bold: True
-        on_press: app.sm.get_screen('Home')._btnchg(self,6)
-        on_release: app.on_release(self, 6);app.sm.current = "Home"; 
+        on_release: app.sm.current = "Home"
     TimeLabel:
         size_hint_x:0.7
         color: 0,0,0
 
 <LLPopup>:
     title: 'Confirmation'
-    size_hint: (0.4,0.4)
+    size_hint: (1,0.4)
     BoxLayout:
         orientation:'vertical'
         Label:
@@ -209,7 +205,7 @@
                 size_hint_x:0.3
                 text: f'{root.row.tm.second:02}'
         BoxLayout:
-            size_hint_y:0.5
+            size_hint_y:0.25
             orientation:'horizontal'
             Button:
                 text:'Confirm'
@@ -217,3 +213,7 @@
             Button:
                 text:'Cancel'
                 on_release: root.dismiss()
+        Button:
+            size_hint_y:0.25
+            text: 'Auto timing'
+            on_press: root.on_auto(now.now())

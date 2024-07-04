@@ -6,6 +6,7 @@ one or more of the screens shown in the app
 from kivy.app import App
 from kivy.base import Builder
 from kivy.clock import Clock
+from kivy.graphics import Color, RoundedRectangle
 from kivy.properties import StringProperty, ObjectProperty, BooleanProperty, NumericProperty
 from kivy.uix.recycleview import RecycleView
 from kivy.uix.recycleview.views import RecycleDataViewBehavior
@@ -17,7 +18,7 @@ from kivy.uix.popup import Popup
 from kivy.uix.modalview import ModalView
 from kivy.config import ConfigParser
 
-from datetime import datetime, time, timedelta, date
+from datetime import datetime, time, timedelta
 from models import EventLog, settings_file
 
 Builder.load_file('base.kv')
@@ -32,6 +33,7 @@ if settings.sections() == []:
                             'use_rt': 'True'}
     settings.write()
 
+# Backwards Compatibility
 if 'use_ll' not in settings.options('SETTINGS'):
     settings['SETTINGS']['use_ll'] = 'True'
     settings.write()
@@ -49,35 +51,74 @@ if 'use_rt' not in settings.options('SETTINGS'):
     settings.write()
 
 offset = settings.getfloat('SETTINGS','offset')
+prev_offset = 0 # offset due to the addition of timedelta object (see update_clock function)
+update_objs = list() # list of objects which contain a clock or code involving clock
+
+def update_clock(dt):
+    '''Adds an offset to the local time to sync it to the NTP server'''
+
+    offset = settings.getfloat('SETTINGS','offset')
+    global prev_offset
+
+    t1 = datetime.now()
+    tm = datetime.now() + timedelta(seconds=offset,microseconds=prev_offset)
+    t2 = datetime.now()
+
+    # when the timedelta object is added, the process can take some time(in microseconds order)
+    # and hence a lag occurs in the time (even if very little)
+    # Further accumulation of this delay can offset the time by seconds, or even minutes
+    # To counteract this, the previous offset is saved which is added on the next run
+    # An offset is still there as adding on the same run will make it kind of like a paradox as
+    # then there will be another offset and so on
+    prev_offset = (t2 - t1).microseconds
+    for obj in update_objs:
+        obj.tm = tm.time()
 
 class RTimePopup(Popup):
+    '''Class for the popup which shows up when a restart time is to be added'''
+
     hour = ObjectProperty(None)
     minute = ObjectProperty(None)
     sec = ObjectProperty(None)
-    init = BooleanProperty(False)
+    prev_offset = 0
+
     def __init__(self, row,**kwargs):
         self.row = row
         self.tm = self.row.tm
-        self.init = True
         super().__init__(**kwargs)
 
     def on_rtm(self):
         new_tm = time(int(self.hour.text),int(self.minute.text),int(self.sec.text))
+
+        # if the new time is before old time, then don't take the time
         if self.row.tm > new_tm:
                 Dialog(self.parent, text="Invalid RTime").open()
         else:
             self.row.is_rtm = True
             self.row.rtm = time(int(self.hour.text), int(self.minute.text), int(self.sec.text))
-            print(self.row.is_rtm)
-            home = App.get_running_app().sm.get_screen('Home')
-            home.upcount = 0
+
+            # Since there has been a change in data, the upload button is changed
+            # as the uploaded data is not same as the local data
             settings['SETTINGS']['up_count'] = str(0)
             settings.write()
-            home.chg_text()
-            self.dismiss()
 
+            self.dismiss()
+    def on_auto(self, time):
+        '''Adds the new row to the RecycleView(at the top) and to the logfile database(at the end)'''
+
+        t1 = datetime.now()
+        tm = time + timedelta(seconds=offset,microseconds=self.prev_offset)
+        t2 = datetime.now()
+        self.prev_offset = (t2 - t1).microseconds
+
+        # Show it in the edit section if it wants to be further edited
+        self.hour.text = f'{tm.hour:02}'
+        self.minute.text = f'{tm.minute:02}'
+        self.sec.text = f'{tm.second:02}'
 
 class LLPopup(Popup):
+    '''Class for the popup which shows up when a Lifeline is to be given'''
+
     def __init__(self, row,**kwargs):
         self.row = row
         super().__init__(**kwargs)
@@ -85,17 +126,21 @@ class LLPopup(Popup):
     def on_ll(self):
         self.row.LL = True
         self.dismiss()
+
+        # Since there has been a change in data, the upload button is changed
+        # as the uploaded data is not same as the local data
         home = App.get_running_app().sm.get_screen('Home')
-        home.upcount = 0
         settings['SETTINGS']['up_count'] = str(0)
         settings.write()
-        home.chg_text()
 
 class Dialog(ModalView):
+    '''Class for showing alerts to the user'''
+
     fsz = ObjectProperty(None)
     text = ObjectProperty(None)
     def __init__(self, parent,text,**kwargs):
         super().__init__(**kwargs)
+
         self.height = parent.height * 0.1
         self.width = parent.width *0.4
         self.text.text = text
@@ -111,11 +156,15 @@ class NavigationBar(BoxLayout):
 class LogRow(RecycleDataViewBehavior, BoxLayout):
     '''Class which is used as the row for displaying the events in the logfile'''
 
-    row = ObjectProperty(None)
-    use_ll = BooleanProperty(settings.getboolean('SETTINGS','use_ll'))
-    use_rt = BooleanProperty(settings.getboolean('SETTINGS','use_rt'))
-    ll_row = ObjectProperty(None)
-    rt_row = ObjectProperty(None)
+    carno = ObjectProperty(None)
+    tm = ObjectProperty(time(0,0,0)) # captured time of car
+    rtime = ObjectProperty(time(0,0,0), allownone=True) # Restart time of the car
+    is_rtm = BooleanProperty(False) # if there is Restart time given to the car
+    LL = BooleanProperty(False) # if Lifeline is given to the car
+    use_ll = BooleanProperty(settings.getboolean('SETTINGS','use_ll')) # Whether to use Lifeline
+    use_rt = BooleanProperty(settings.getboolean('SETTINGS','use_rt')) # Whether to use restart time
+    ll_row = ObjectProperty(None) # LL label for the row
+    rt_row = ObjectProperty(None) # restart time label for the row
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -125,6 +174,8 @@ class LogRow(RecycleDataViewBehavior, BoxLayout):
         settings.add_callback(self.reload_rt, 'SETTINGS','use_rt')
 
     def reload_ll(self,section, key,value):
+        '''Hide the label if it is present when LL is not to be used and vice versa'''
+
         self.use_ll = settings.getboolean(section,key)
         if not self.use_ll and self.ll_row in self.children:
             self.remove_widget(self.ll_row)
@@ -132,10 +183,9 @@ class LogRow(RecycleDataViewBehavior, BoxLayout):
             self.add_widget(self.ll_row)
 
     def reload_rt(self,section, key,value):
+        '''Hide the label if it is present when LL is not to be used and vice versa'''
+
         self.use_rt = settings.getboolean(section,key)
-        print("Value:", self.use_rt)
-        print(self.rt_row)
-        print(self.children)
         if not self.use_rt and self.rt_row in self.children:
             self.remove_widget(self.rt_row)
         elif self.use_rt and self.rt_row not in self.children:
@@ -149,8 +199,11 @@ class NumericInput(TextInput):
         self.input_filter='int'
 
 class RTimeInput(NumericInput):
-    tm = ObjectProperty(None)
-    pop = ObjectProperty(None)
+    ''' Input for time in the Restart time popup'''
+
+    tm = ObjectProperty(None) # Original captured time
+    pop = ObjectProperty(None) # Restart time popup
+
     def insert_text(self, substring: str, from_undo=False):
         text = self.text + substring
         if len(text) >2:
@@ -159,38 +212,33 @@ class RTimeInput(NumericInput):
             if self == self.pop.hour:
                     if int(text) >= 24:
                         substring = ''
-                    print("hour: ",self.tm.hour)
             elif self == self.pop.minute:
                     if int(text) >= 60:
                         substring = ''
-                    print("minute: ",self.text)
             elif self == self.pop.sec:
                     if int(text) >= 60:
                         substring = ''
-                    print("second: ",self.text)
         return super().insert_text(substring, from_undo)
     pass
+
 class RallyRow(RecycleDataViewBehavior, BoxLayout):
     ''' Class which is used as the row for showing data in the Finish data capture list'''
 
-    tm = ObjectProperty(time(0,0,0))
-    LL = BooleanProperty(False)
-    use_ll = BooleanProperty(settings.getboolean('SETTINGS','use_ll'))
-    ll_but = ObjectProperty(None)
-    is_rtm = BooleanProperty(False)
-    rtm = ObjectProperty(time(0,0,0),allownone=True)
     carno = StringProperty("")
-    prev_carno = ""
-    row = None
-    row_id = NumericProperty(0)
-    wrong_car = BooleanProperty(False)
-    rt_but = ObjectProperty(None)
-    use_rt = BooleanProperty(settings.getboolean('SETTINGS','use_rt'))
+    tm = ObjectProperty(time(0,0,0)) # captured time of car
+    rtm = ObjectProperty(time(0,0,0),allownone=True) # Restart time of the car
+    is_rtm = BooleanProperty(False) # if there is Restart time given to the car
+    LL = BooleanProperty(False) # if Lifeline is given to the car
+    row_id = NumericProperty(0) # Database row id corresponding to this data
+    wrong_car = BooleanProperty(False) # if the car no. entered is duplicate
+    use_ll = BooleanProperty(settings.getboolean('SETTINGS','use_ll')) # Whether to use Lifeline
+    use_rt = BooleanProperty(settings.getboolean('SETTINGS','use_rt')) # Whether to use restart time
+    ll_but = ObjectProperty(None) # LL button for the row
+    rt_but = ObjectProperty(None) # restart time button for the row
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        if self.is_rtm:
-            self.tm = self.rtm
+        
         self.reload_ll('SETTINGS','use_ll', None)
         self.reload_rt('SETTINGS','use_rt', None)
         settings.add_callback(self.reload_rt, 'SETTINGS','use_rt')
@@ -198,6 +246,7 @@ class RallyRow(RecycleDataViewBehavior, BoxLayout):
 
     def refresh_view_attrs(self, rv, index, data):
         ''' Catch and handle the view changes '''
+
         data_rv = rv.data
 
         # the index shound change every time a row is added as the new element is added to the top and index of the elements increases by one
@@ -214,15 +263,14 @@ class RallyRow(RecycleDataViewBehavior, BoxLayout):
             self.prev_carno = str(row.carno)
 
         self.row_id=row_id
-        print(self.is_rtm)
 
         return super(RallyRow, self).refresh_view_attrs(rv, index, data)
 
     def on_enter(self):
+        '''Process and save the new car no entered'''
 
         app = App.get_running_app()# the app being run
         rv = app.rv# the RecycleView of the Finish screen
-        log = app.sm.get_screen("Log")# the Log screen
 
          # Find the record with id (auto-incremented integer PK for this table) and corresponding event type and set the carno to new one
         row = EventLog.select().where(EventLog.id==self.row_id).get()
@@ -243,31 +291,25 @@ class RallyRow(RecycleDataViewBehavior, BoxLayout):
             dia.show()
         row.carno = self.carno
         row.save()
+
         # Set the new carno in the view
         rv.data[self.index]['carno'] = self.carno
 
-        app = App.get_running_app()
-        log = app.sm.get_screen("Log")
-        log.reload(row=row)
-        home = app.sm.get_screen('Home')
-        home.upcount = 0
+        # reset the upload count
         settings['SETTINGS']['up_count'] = str(0)
         settings.write()
-        home.chg_text()
 
     def on_LL(self,instance, value):
         row = EventLog.select().where(EventLog.id==self.row_id).get()
         row.LL = self.LL
-        print(self.LL)
         row.save()
-        app = App.get_running_app()
-        log = app.sm.get_screen("Log")
-        log.reload(row=row)
 
     def on_ll(self):
         LLPopup(row=self).open()
 
     def reload_ll(self,section, key,value):
+        '''Hide the label if it is present when LL is not to be used and vice versa'''
+
         self.use_ll = settings.getboolean(section,key)
         if not self.use_ll and self.ll_but in self.children:
             self.remove_widget(self.ll_but)
@@ -275,6 +317,8 @@ class RallyRow(RecycleDataViewBehavior, BoxLayout):
             self.add_widget(self.ll_but)
 
     def reload_rt(self,section, key,value):
+        '''Hide the label if it is present when Restart time is not to be used and vice versa'''
+
         self.use_rt = settings.getboolean(section,key)
         if not self.use_rt and self.rt_but in self.children:
             self.remove_widget(self.rt_but)
@@ -290,41 +334,28 @@ class RallyRow(RecycleDataViewBehavior, BoxLayout):
             row.is_rtm = self.is_rtm
             row.rtime = self.rtm
             row.save()
-            app = App.get_running_app()
-            log = app.sm.get_screen("Log")
-            log.reload(row=row)
 
 class TimeLabel(Label):
     '''Class for Labels showing only time'''
 
     tm = ObjectProperty(time(0,0,0))
     update = BooleanProperty(True) # Checks if the time in the Label is to be updated or not
-    prev_offset = ObjectProperty(0)
+
     def __init__(self, **kwargs):
-        self.update = self.update if not 'update' in kwargs.keys() else kwargs['update']
+        update_objs.append(self)
 
         # Updates the clock every 1/60 seconds (the event is cancelled i.e. the label text is not updated if the update property is False)
-        self.event = Clock.schedule_interval(self.update_clock, 1/60)
+        self.update = self.update if not 'update' in kwargs.keys() else kwargs['update']
 
         super().__init__(**kwargs)
 
     def on_update(self, instance, value):
         '''Schedule the update_clock event if its not already scheduled and self.update is changed from false to true'''
         if self.update:
-            Clock.schedule_interval(self.update_clock, 1/60)
+            update_objs.append(self)
         else:
-            self.event.cancel()
+            update_objs.remove(self)
             self.tm = time(0,0,0)
-
-    def update_clock(self, dt):
-        '''Sets the Label text to the current time if the update property is true'''
-
-        offset = settings.getfloat('SETTINGS','offset')
-        t1 = datetime.now()
-        tm = datetime.now() + timedelta(seconds=offset,microseconds=self.prev_offset)
-        t2 = datetime.now()
-        self.prev_offset = (t2 - t1).microseconds
-        self.tm = tm.time()
 
     def on_tm(self, instance, value):
         self.text = self.tm.strftime("%H:%M:%S")
@@ -332,6 +363,16 @@ class TimeLabel(Label):
 class RoundedButton(Button):
     '''Class for Buttons with rounded corner (styling in kv file)'''
 
+    def on_state(self,ins, value):
+        '''Changes the color of the RoundedButton when pressed(due to custom layout, there is no appearance change of button when it is pressed by the user)'''
+
+        if value == 'down':
+            with self.canvas:
+                self._color = Color(200/255, 228/255, 244/255,0.5)
+                self._rect = RoundedRectangle(pos=self.pos, size=self.size)
+        if value == 'normal':
+            self.canvas.remove(self._color)
+            self.canvas.remove(self._rect)
     pass
 
 class RV(RecycleView):

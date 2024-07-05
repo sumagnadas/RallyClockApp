@@ -75,7 +75,6 @@ class RTimePopup(Popup):
         self.minute.text = f'{tm.minute:02}'
         self.sec.text = f'{tm.second:02}'
 
-
 class LLPopup(Popup):
     '''Class for the popup which shows up when a Lifeline is to be given'''
 
@@ -190,7 +189,6 @@ class RallyRow(RecycleDataViewBehavior, BoxLayout):
     tm = ObjectProperty(time(0,0,0)) # captured time of car
     rtm = ObjectProperty(time(0,0,0),allownone=True) # Restart time of the car
     is_rtm = BooleanProperty(False) # if there is Restart time given to the car
-    rtm_info = StringProperty("")
     LL = BooleanProperty(False) # if Lifeline is given to the car
     row_id = NumericProperty(0) # Database row id corresponding to this data
     wrong_car = BooleanProperty(False) # if the car no. entered is duplicate
@@ -226,7 +224,6 @@ class RallyRow(RecycleDataViewBehavior, BoxLayout):
             self.prev_carno = str(row.carno)
 
         self.row_id=row_id
-        print("data: ", data)
         return super(RallyRow, self).refresh_view_attrs(rv, index, data)
 
     def on_enter(self):
@@ -294,7 +291,11 @@ class RallyRow(RecycleDataViewBehavior, BoxLayout):
 
     def on_rtm(self,instance,value):
         if self.is_rtm:
-            self.rtm_info = self.rtm.strftime("%H:%M:%S")
+            app = App.get_running_app()# the app being run
+            rv = app.rv# the RecycleView of the Finish screen
+            rv.data[self.index]['rtm'] = self.rtm
+            rv.data[self.index]['is_rtm'] = self.is_rtm
+
             row = EventLog.select().where(EventLog.id==self.row_id).get()
             row.is_rtm = self.is_rtm
             row.rtime = self.rtm

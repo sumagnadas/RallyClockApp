@@ -9,15 +9,16 @@
     padding:10,10
     spacing: 20
     Label:
-        size_hint_x: 0.2 + 0.2 * int(not root.use_rt)
+        size_hint_x: 0.2 + 0.1 * int(not root.use_rt)
         text_size: self.size
         halign: 'left'
+        valign: 'center'
         color: 0, 0, 0
         bold: True
         font_size:(self.height ** 1.6 + self.width**1.2) ** 0.5
         text:str(root.carno) if root.carno else ''
     TimeLabel:
-        size_hint_x: 0.3 + 0.1 * int(not root.use_ll) + 0.2 * int(not root.use_rt)
+        size_hint_x: 0.3 + 0.1 * int(not root.use_ll) + 0.3 * int(not root.use_rt)
         font_size:  (self.height ** 1.8 + self.width**1.2) ** 0.5
         color: 0, 0, 0
         update:False
@@ -52,12 +53,24 @@
         font_size: self.height * 0.6
         size: self.size
         on_text_validate: root.on_enter()
-    TimeLabel:
+    BoxLayout:
         size_hint_x: 0.6 + 0.05 * (int(root.use_ll) +int(root.use_rt))
-        color: 0, 0, 0
-        id: tm
-        update:False
-        tm:root.tm
+        orientation: 'vertical'
+        TimeLabel:
+            size_hint_y: 0.7
+            color: 0, 0, 0
+            id: tm
+            update:False
+            tm:root.tm
+        Label:
+            size_hint_y: 0.3
+            bold:True
+            text_size: self.size
+            valign:'center'
+            halign:'right'
+            font_size:  self.height * 0.9
+            color:0,0,0
+            text: root.rtm.strftime("%H:%M:%S") if root.is_rtm and root.rtm else ''
     RoundedButton:
         id:rt_but
         color: 0,0,0
@@ -217,3 +230,30 @@
             size_hint_y:0.25
             text: 'Auto timing'
             on_press: root.on_auto(now.now())
+
+<UploadPopup>:
+    name:name
+    auto_dismiss: False
+    title: 'Enter Uploader Name'
+    size_hint: (1,0.4)
+    BoxLayout:
+        orientation: 'vertical'
+        size:self.parent.size
+        BoxLayout:
+            orientation:'horizontal'
+            size_hint_y:0.5
+            TextInput:
+                id: name
+                background_color: 0,0,0,0
+                foreground_color: 1,1,1,1
+                font_size: self.height * 0.5
+                multiline: False
+        BoxLayout:
+            size_hint_y:0.5
+            orientation:'horizontal'
+            Button:
+                text:'Upload'
+                on_release: root.verify_and_up()
+            Button:
+                text:'Cancel'
+                on_release: root.dismiss()

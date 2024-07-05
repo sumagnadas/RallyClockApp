@@ -9,7 +9,7 @@ from pages import Home, Page3, StageSel, ViewLog, SetPage
 from kivy.uix.screenmanager import ScreenManager,NoTransition
 from kivy.core.window import Window
 from kivy.clock import Clock
-from base import update_clock
+from globals import update_clock
 
 class MainApp(App):
 

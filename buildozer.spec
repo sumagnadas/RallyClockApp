@@ -26,10 +26,10 @@ source.include_exts = py,png,jpeg,kv,atlas,json
 
 # (list) List of exclusions using pattern matching
 # Do not prefix with './'
-#source.exclude_patterns = license,images/*/*.jpg
+source.exclude_patterns = license,images/*/*.jpg,tutorial/*
 
 # (str) Application versioning (method 1)
-version = 1.1
+version = 1.2
 
 # (str) Application versioning (method 2)
 # version.regex = __version__ = ['"](.*)['"]

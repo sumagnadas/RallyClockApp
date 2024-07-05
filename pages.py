@@ -6,12 +6,12 @@ are shown to user as they interact with the app
 from kivy.app import App
 from kivy.base import Builder
 from kivy.properties import ObjectProperty, BooleanProperty
-from kivy.graphics import Color, RoundedRectangle
 from kivy.uix.screenmanager import Screen
 from models import EventLog
-from base import Dialog, settings, offset, update_objs
+from base import Dialog, UploadPopup
 from gspread import service_account
-from datetime import datetime, timedelta
+import globals
+from datetime import datetime
 from ntplib import NTPClient, NTPException
 
 ntp = NTPClient()
@@ -37,11 +37,11 @@ class Home(Screen):
 
     def __init__(self, **kw):
 
-        update_objs.append(self)
-        up_count = settings.getint('SETTINGS','up_count')
-        settings.add_callback(self.chg_text,'SETTINGS','up_count')
+        globals.update_objs.append(self)
+        up_count = globals.settings.getint('SETTINGS','up_count')
+        globals.settings.add_callback(self.chg_text,'SETTINGS','up_count')
         if up_count:
-            self.last_up_time = datetime.strptime(settings['SETTINGS']['last_up_time'],'%d/%m/%y %H:%M:%S')
+            self.last_up_time = datetime.strptime(globals.settings['SETTINGS']['last_up_time'],'%d/%m/%y %H:%M:%S')
         self.chg_text(val=up_count) # changes the upload button to include relevant info
 
         super().__init__(**kw)
@@ -52,20 +52,25 @@ class Home(Screen):
         self.manager.get_screen("Log").reload()
         self.manager.current = "Log"
 
-    def on_upload(self, obj):
+    def upload(self):
+        UploadPopup(self.on_upload).open()
+
+    def on_upload(self,name):
         '''
         Uploads the data to the Google Sheets where itcan be downloaded from and post-processed
         '''
 
         if not self.sheet:
             self.sheet = service_account(filename='credentials.json').open("Rally Clock Data").sheet1
-        EventLog.upload(self.sheet)
+        EventLog.upload(self.sheet,name)
         Dialog(self, 'Done Uploading').show()
         now = datetime.now()
         self.last_up_time = now
-        settings['SETTINGS']['last_up_time'] = now.strftime("%d/%m/%y %H:%M:%S")
-        settings['SETTINGS']['up_count'] = str(self.upcount)
-        settings.write()
+        globals.settings['SETTINGS']['last_up_time'] = now.strftime("%d/%m/%y %H:%M:%S")
+        globals.settings['SETTINGS']['up_count'] = str(self.upcount)
+        globals.settings['SETTINGS']['up_name'] = name
+        globals.settings.write()
+        return 0
 
     def chg_text(self,s = None,k = None,val = None):
         '''
@@ -93,29 +98,29 @@ class SetPage(Screen):
     def __init__(self, **kw):
         super().__init__(**kw)
 
-        self.use_ll.active = settings.getboolean('SETTINGS','use_ll')
-        self.use_rt.active = settings.getboolean('SETTINGS','use_rt')
+        self.use_ll.active = globals.settings.getboolean('SETTINGS','use_ll')
+        self.use_rt.active = globals.settings.getboolean('SETTINGS','use_rt')
 
-        self.on_offset('SETTINGS','offset', offset) # Change the offset if it is present
-        settings.add_callback(self.on_offset, 'SETTINGS','offset')
+        self.on_offset('SETTINGS','offset', globals.offset) # Change the offset if it is present
+        globals.settings.add_callback(self.on_offset, 'SETTINGS','offset')
 
     def erase_log(self):
         EventLog.delete().execute()
         self.manager.get_screen("Page3").rv.data = list() # Clear the Time Capture Screen
 
         # Reset the upload count and info (not in sync with last uploaded data)
-        settings['SETTINGS']['up_count'] = str(0)
-        settings.write()
+        globals.settings['SETTINGS']['up_count'] = str(0)
+        globals.settings.write()
 
         Dialog(self, 'Done Erasing').show()
 
     def on_ll_active(self,value):
-        settings['SETTINGS']['use_ll'] = str(value)
-        settings.write()
+        globals.settings['SETTINGS']['use_ll'] = str(value)
+        globals.settings.write()
 
     def on_rt_active(self,value):
-        settings['SETTINGS']['use_rt'] = str(value)
-        settings.write()
+        globals.settings['SETTINGS']['use_rt'] = str(value)
+        globals.settings.write()
 
     def on_offset(self,sec,key,value):
         self.sync_but.text = f'Sync\nOffset from local time: {float(value):.02f}s'
@@ -126,11 +131,10 @@ class SetPage(Screen):
         for server in time_servers: # try different servers for time syncing
             try:
                 response = ntp.request(server)
-                global offset
-                offset = response.offset
+                globals.offset = response.offset
                 print(server)
-                settings['SETTINGS']['offset'] = str(offset)
-                settings.write()
+                globals.settings['SETTINGS']['offset'] = str(globals.offset)
+                globals.settings.write()
                 Dialog(self, '-Done-').open()
                 return 0 # exit the function if the time was synced
             except NTPException:
@@ -151,9 +155,9 @@ class StageSel(Screen):
     def __init__(self, **kw):
         super().__init__(**kw)
 
-        self.stg_sel_drop.text = settings['SETTINGS']['stg_no']
-        self.stage.text = settings['SETTINGS']['stage']
-        self.day.text = settings['SETTINGS']['day']
+        self.stg_sel_drop.text = globals.settings['SETTINGS']['stg_no']
+        self.stage.text = globals.settings['SETTINGS']['stage']
+        self.day.text = globals.settings['SETTINGS']['day']
 
     def on_stage(self, value):
         '''
@@ -199,8 +203,8 @@ class StageSel(Screen):
                 self.stg_sel_drop.values = values
                 self.stg_sel_drop.text = values[0]
 
-        settings['SETTINGS']['stage'] = value
-        settings.write()
+        globals.settings['SETTINGS']['stage'] = value
+        globals.settings.write()
 
         # Change button text format for the middle portion
         self.but_text_ch(curr_stg=s)
@@ -218,7 +222,7 @@ class StageSel(Screen):
 
         # if day no. has changed
         if day_no:
-            settings['SETTINGS']['day'] = day_no
+            globals.settings['SETTINGS']['day'] = day_no
             app.loc_but.text = string[:10] + day_no + string[11:]
 
         # if current stage has changed
@@ -227,12 +231,12 @@ class StageSel(Screen):
 
         # if stage no./regroup no has changed (not present when at stage "Rally Start" or "Rally Finish")
         elif stg_no:
-            settings['SETTINGS']['stg_no'] = stg_no
+            globals.settings['SETTINGS']['stg_no'] = stg_no
             string = string[:-2] + f'{int(stg_no):02}'
             app.loc_but.text = string
 
         if not curr_stg:
-            settings.write()
+            globals.settings.write()
 
         # if the stage no/regroup no selection widget wasnt present but the button text still has stage no., this will remove it.
         # on the other hand, if the stage no/regroup no selection widget is present but the button text doesnt have stage no., this will add it
@@ -265,18 +269,15 @@ class Page3(Screen):
         loc = App.get_running_app().loc_but.text
         loc = loc.split('\n')
         loc = loc[1]
-        t1 = datetime.now()
-        tm = time + timedelta(seconds=offset,microseconds=self.prev_offset)
-        t2 = datetime.now()
-        self.prev_offset = (t2 - t1).microseconds
+        tm = globals.synced_time.time()
 
-        row = EventLog.insert(carno='',location=loc,date=time.date(), time=tm.time())
+        row = EventLog.insert(carno='',location=loc,date=time.date(), time=tm)
         row.execute()
-        self.rv.data.insert(0, {'tm': tm.time(),'carno': '', 'LL':False, 'is_rtm': False,'rtm': None})
+        self.rv.data.insert(0, {'tm': tm,'carno': '', 'LL':False, 'is_rtm': False,'rtm': None})
         self.manager.get_screen("Log").reload()
 
-        settings['SETTINGS']['up_count'] = str(0)
-        settings.write()
+        globals.settings['SETTINGS']['up_count'] = str(0)
+        globals.settings.write()
 
 class ViewLog(Screen):
     '''Log screen'''

@@ -40,6 +40,8 @@
 <RallyRow>:
     ll_but:ll_but.__self__
     rt_but:rt_but.__self__
+    rtm_label:rtm_label.__self__
+    tm_box: tm_box
     car: car
     carno: car.text
     orientation: 'horizontal'
@@ -54,6 +56,7 @@
         size: self.size
         on_text_validate: root.on_enter()
     BoxLayout:
+        id: tm_box
         size_hint_x: 0.6 + 0.05 * (int(root.use_ll) +int(root.use_rt))
         orientation: 'vertical'
         TimeLabel:
@@ -63,6 +66,7 @@
             update:False
             tm:root.tm
         Label:
+            id: rtm_label
             size_hint_y: 0.3
             bold:True
             text_size: self.size

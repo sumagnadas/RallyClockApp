@@ -196,6 +196,8 @@ class RallyRow(RecycleDataViewBehavior, BoxLayout):
     use_rt = BooleanProperty(globals.settings.getboolean('SETTINGS','use_rt')) # Whether to use restart time
     ll_but = ObjectProperty(None) # LL button for the row
     rt_but = ObjectProperty(None) # restart time button for the row
+    rtm_label = ObjectProperty(None) # restart time label for the row
+    tm_box = ObjectProperty(None) # Box containing restart time label and time
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -283,8 +285,10 @@ class RallyRow(RecycleDataViewBehavior, BoxLayout):
         no = len(self.children) - 2
         if not self.use_rt and self.rt_but in self.children:
             self.remove_widget(self.rt_but)
+            self.tm_box.remove_widget(self.rtm_label)
         elif self.use_rt and self.rt_but not in self.children:
             self.add_widget(self.rt_but,index=no)
+            self.tm_box.add_widget(self.rtm_label)
 
     def on_rt(self,but):
         RTimePopup(self).open()

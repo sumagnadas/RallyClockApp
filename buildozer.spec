@@ -29,7 +29,7 @@ source.include_exts = py,png,jpeg,kv,atlas,json,ttf
 source.exclude_patterns = license,images/*/*.jpg,tutorial/*
 
 # (str) Application versioning (method 1)
-version = 1.4
+version = 1.5
 
 # (str) Application versioning (method 2)
 # version.regex = __version__ = ['"](.*)['"]
@@ -264,7 +264,7 @@ android.permissions = android.permission.INTERNET
 
 # (bool) Indicate whether the screen should stay on
 # Don't forget to add the WAKE_LOCK permission if you set this to True
-#android.wakelock = False
+android.wakelock = True
 
 # (list) Android application meta-data to set (key=value format)
 #android.meta_data =

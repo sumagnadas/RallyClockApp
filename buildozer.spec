@@ -29,7 +29,7 @@ source.include_exts = py,png,jpeg,kv,atlas,json,ttf
 source.exclude_patterns = license,images/*/*.jpg,tutorial/*
 
 # (str) Application versioning (method 1)
-version = 1.5
+version = 1.6
 
 # (str) Application versioning (method 2)
 # version.regex = __version__ = ['"](.*)['"]
@@ -71,7 +71,7 @@ osx.kivy_version = 1.9.1
 
 #
 # Android specific
-android.api = 31
+android.api = 34
 android.archs = x86_64, arm64-v8a, armeabi-v7a
 #android.minapi = 21
 #android.sdk = 21
@@ -129,7 +129,7 @@ android.permissions = android.permission.INTERNET
 #android.ndk_path =
 
 # (str) Android SDK directory (if empty, it will be automatically downloaded.)
-#android.sdk_path = /home/sumagna/Downloads/android_sdk
+android.sdk_path = /mnt/Extra/android_sdk
 
 # (str) ANT directory (if empty, it will be automatically downloaded.)
 #android.ant_path =

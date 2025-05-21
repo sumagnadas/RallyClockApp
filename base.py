@@ -389,3 +389,23 @@ class RV(RecycleView):
     def __init__(self, **kwargs):
         super(RV, self).__init__(**kwargs)
         self.data = list()
+
+
+class FlightPopup(Popup):
+    """
+    Class for the popup which shows up when asking whether
+    the user wants to capture time without turning on airplane mode or not
+    """
+
+    def __init__(self, manager, **kwargs):
+        self.manager = manager
+        super().__init__(**kwargs)
+
+    def on_confirm(self):
+        """
+        If the user wants to continue to capture, then let
+        them capture and go to the capture screen
+        """
+
+        self.dismiss()
+        self.manager.current = "Page3"

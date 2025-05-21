@@ -8,11 +8,13 @@ from kivy.base import Builder
 from kivy.properties import ObjectProperty, BooleanProperty
 from kivy.uix.screenmanager import Screen
 from models import EventLog
-from base import Dialog, UploadPopup
+from base import Dialog, UploadPopup, FlightPopup
 from gspread import service_account
 import globals
 from datetime import datetime
 from ntplib import NTPClient, NTPException
+from jnius import autoclass
+from android import mActivity
 
 ntp = NTPClient()
 time_servers = [
@@ -59,6 +61,18 @@ class Home(Screen):
 
         self.manager.get_screen("Log").reload()
         self.manager.current = "Log"
+
+    def on_cap(self, obj):
+        """Checks if Airplane mode is turned on before going to capture screen"""
+
+        Global = autoclass("android.provider.Settings$Global")
+        is_airpl = Global.getString(
+            mActivity.getContentResolver(), Global.AIRPLANE_MODE_ON
+        )
+        if not int(is_airpl):
+            FlightPopup(self.manager).open()
+        else:
+            self.manager.current = "Page3"
 
     def upload(self):
         UploadPopup(self.on_upload).open()

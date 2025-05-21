@@ -258,3 +258,22 @@
             Button:
                 text:'Cancel'
                 on_release: root.dismiss()
+
+<FlightPopup>:
+    title: 'Confirmation'
+    size_hint: (1,0.4)
+    BoxLayout:
+        orientation:'vertical'
+        Label:
+            size_hint_y:0.7
+            text: 'Are you sure you want to start capturing time with Airplane Mode OFF?'
+            text_size: self.width, None
+        BoxLayout:
+            size_hint_y:0.3
+            orientation: 'horizontal'
+            Button:
+                text:'Yes'
+                on_release: root.on_confirm()
+            Button:
+                text:'No'
+                on_release: root.dismiss()

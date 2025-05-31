@@ -277,3 +277,25 @@
             Button:
                 text:'No'
                 on_release: root.dismiss()
+
+<Re_StartPopup>:
+    title: 'Confirmation'
+    size_hint: (1,0.4)
+    BoxLayout:
+        orientation:'vertical'
+        Label:
+            size_hint_y:0.7
+            text: 'Select time for start interval'
+            text_size: self.width, None
+        BoxLayout:
+            size_hint_y:0.3
+            orientation: 'horizontal'
+            Button:
+                text:'30s'
+                on_release: root.change_time(0.5)
+            Button:
+                text:'1min'
+                on_release: root.change_time(1)
+            Button:
+                text:'2mins'
+                on_release: root.change_time(2)

@@ -4,6 +4,7 @@ It starts the main thread as well as setup the app for running
 
 '''
 
+__version__ = "2.0"
 from kivy.app import App
 from pages import Home, Page3, StageSel, ViewLog, SetPage
 from kivy.uix.screenmanager import ScreenManager,NoTransition
@@ -18,15 +19,15 @@ class MainApp(App):
     use_kivy_settings = False
 
     def build(self):
+        Clock.schedule_interval(update_clock, 0.1)
         home = Home(name="Home")
         self.loc_but = home.loc_but
         self.sm.add_widget(home)
         self.sm.add_widget(Page3(name="Page3"))
         self.sm.add_widget(StageSel(name="StageSel"))
         self.sm.add_widget(ViewLog(name="Log"))
-        self.sm.add_widget(SetPage(name='Settings'))
+        self.sm.add_widget(SetPage(name='Settings', version=__version__))
         self.rv = self.sm.get_screen('Page3').rv
-        Clock.schedule_interval(update_clock, 0.1)
 
         win = Window
         win.bind(on_keyboard=self.my_key_handler)

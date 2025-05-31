@@ -4,6 +4,8 @@
 
 <Page3>:
     rv:rv
+    tm_label: tm_label
+    capt_button: capt_button
     canvas.before:
         Color:
             rgb: 1,1,1
@@ -19,10 +21,15 @@
             orientation: 'vertical'
             padding: 10, 10
             spacing: 10
+            TimeLabel:
+                id: tm_label
+                size_hint_y: 0.2
+                color: 0,0,0
             RV:
                 viewclass: 'RallyRow'
                 id: rv
             RoundedButton:
+                id: capt_button
                 size_hint_y: 0.2
                 color: 0,0,0
                 font_size: (self.height ** 1.9 + self.width**1.3) ** 0.5
@@ -159,6 +166,12 @@
                 size_hint_y:0.1
                 text: 'Erase ALL Captures'
                 on_release: root.erase_log()
+            RoundedButton:
+                color:0,0,0
+                bold: True
+                size_hint_y:0.1
+                text: f'Set Re/Start time if present\nCurrent time: {root.tm} mins'
+                on_release: root.re_start()
             BoxLayout:
                 orientation:'horizontal'
                 padding: 10, 10
@@ -190,12 +203,12 @@
                     on_active: root.on_ll_active(self.active)
             Label:
                 underline:True
-                size_hint_y:0.6
+                size_hint_y:0.4
                 markup: True
                 text_size:self.size
                 bold: True
                 halign: 'center'
-                valign: 'top'
-                text: '[ref=mail]Feedback and Queries\nrallyclockuploader@gmail.com[/ref]'
+                valign: 'bottom'
+                text: f'[ref=mail]Feedback and Queries\nrallyclockuploader@gmail.com[/ref]\nv{root.version}'
                 color:0,0,0
                 on_ref_press: link.open('mailto:rallyclockuploader@gmail.com')

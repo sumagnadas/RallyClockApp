@@ -409,3 +409,19 @@ class FlightPopup(Popup):
 
         self.dismiss()
         self.manager.current = "Page3"
+
+
+class Re_StartPopup(Popup):
+    """
+    Class for the popup which shows up when asking whether
+    the user wants to capture time without turning on airplane mode or not
+    """ 
+    tm = ObjectProperty(None)
+
+    def __init__(self, **kwargs):
+        # self.manager = manager
+        super().__init__(**kwargs)
+
+    def change_time(self, value):
+        globals.settings["SETTINGS"]['start_time'] =str(value)
+        self.dismiss()

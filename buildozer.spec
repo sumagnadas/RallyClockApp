@@ -29,15 +29,15 @@ source.include_exts = py,png,jpeg,kv,atlas,json,ttf
 source.exclude_patterns = license,images/*/*.jpg,tutorial/*
 
 # (str) Application versioning (method 1)
-version = 1.6
+# version = 2.0
 
-# (str) Application versioning (method 2)
-# version.regex = __version__ = ['"](.*)['"]
-# version.filename = %(source.dir)s/main.py
+(str) Application versioning (method 2)
+version.regex = __version__ = ['"](.*)['"]
+version.filename = %(source.dir)s/main.py
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3,kivy,peewee,gspread,google-auth,google-auth-oauthlib,cachetools,pyasn1,pyasn1_modules,rsa,requests-oauthlib,oauthlib,certifi,charset-normalizer,idna,urllib3,ntplib
+requirements = python3,kivy,peewee,gspread,google-auth,google-auth-oauthlib,cachetools,pyasn1,pyasn1_modules,rsa,requests-oauthlib,oauthlib,certifi,charset-normalizer,idna,urllib3,ntplib,schedule
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes

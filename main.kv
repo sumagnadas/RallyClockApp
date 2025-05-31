@@ -78,9 +78,30 @@
                 valign: 'middle'
                 halign: 'center'
                 on_release: root.manager.current = "Settings"
-            Widget:
+            BoxLayout:
+                orientation: 'vertical'
                 size_hint_x:0.35
                 color: 0,0,0
+                Label:
+                    underline:True
+                    size_hint_y:0.5
+                    markup: True
+                    text_size:self.size
+                    bold: True
+                    halign: 'center'
+                    valign: 'bottom'
+                    text: f'Flight Mode: {root.fl}'
+                    color:0,0,0
+                Label:
+                    underline:True
+                    size_hint_y:0.5
+                    markup: True
+                    text_size:self.size
+                    bold: True
+                    halign: 'center'
+                    valign: 'bottom'
+                    text: f'Synced: {root.sync_done}'
+                    color:0,0,0
             Image:
                 size_hint_x: 0.4
                 source: 'sign.png'

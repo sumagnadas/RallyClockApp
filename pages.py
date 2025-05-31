@@ -5,16 +5,20 @@ are shown to user as they interact with the app
 
 from kivy.app import App
 from kivy.base import Builder
+from kivy.clock import Clock
 from kivy.properties import ObjectProperty, BooleanProperty
 from kivy.uix.screenmanager import Screen
 from models import EventLog
-from base import Dialog, UploadPopup, FlightPopup
+from base import Dialog, UploadPopup, FlightPopup, Re_StartPopup
 from gspread import service_account
 import globals
-from datetime import datetime
+from datetime import datetime, timedelta
 from ntplib import NTPClient, NTPException
 from jnius import autoclass
 from android import mActivity
+from globals import showhide_widget
+import time
+from threading import Thread, Timer
 
 ntp = NTPClient()
 time_servers = [
@@ -41,16 +45,23 @@ class Home(Screen):
     up_info = ObjectProperty(f"Upload(0)")  # text on the upload button
     # Stores the time for the home clock
     tm = ObjectProperty(datetime(1, 1, 1, 0, 0, 0))
+    fl = ObjectProperty("No")
+    sync_done = ObjectProperty("No")
+    _timer = [None]
 
     def __init__(self, **kw):
 
         globals.update_objs.append(self)
         self.up_count = globals.settings.getint("SETTINGS", "up_count")
         globals.settings.add_callback(self.chg_text, "SETTINGS", "up_count")
+        globals.settings.add_callback(self.on_sync, "SETTINGS", "last_sync_time")
+        self.on_sync(None,None,globals.settings["SETTINGS"]["last_sync_time"])
         if self.up_count:
             self.last_up_time = datetime.strptime(
                 globals.settings["SETTINGS"]["last_up_time"], "%d/%m/%y %H:%M:%S"
             )
+        delay = 0.1
+        self._timer = Clock.schedule_interval(self.check_airpl,delay)
         # changes the upload button to include relevant info
         self.chg_text(val=self.up_count)
 
@@ -61,6 +72,15 @@ class Home(Screen):
 
         self.manager.get_screen("Log").reload()
         self.manager.current = "Log"
+    def check_airpl(self, dt):
+        Global = autoclass("android.provider.Settings$Global")
+        is_airpl = Global.getString(
+            mActivity.getContentResolver(), Global.AIRPLANE_MODE_ON
+        )
+        self.fl = "Yes" if int(is_airpl) else "No"
+    def on_sync(self,s,k,v):
+        dt_ob = datetime.strptime(v,'%d/%m/%y %H:%M:%S.%f')
+        self.sync_done = "No" if datetime.today().date() > dt_ob.date() else "Yes"
 
     def on_cap(self, obj):
         """Checks if Airplane mode is turned on before going to capture screen"""
@@ -122,6 +142,8 @@ class SetPage(Screen):
     use_ll = ObjectProperty(None)  # State of Use Lifeline slider
     use_rt = ObjectProperty(None)  # State of Use Restart time slider
     sync_but = ObjectProperty(None)  # Sync Button
+    tm = ObjectProperty(None)
+    version = ObjectProperty("0.0")
 
     def __init__(self, **kw):
         super().__init__(**kw)
@@ -132,6 +154,12 @@ class SetPage(Screen):
         # Change the offset if it is present
         self.on_offset("SETTINGS", "offset", globals.offset)
         globals.settings.add_callback(self.on_offset, "SETTINGS", "offset")
+        self.on_st_tm(None,None, globals.settings["SETTINGS"]["start_time"])
+        globals.settings.add_callback(self.on_st_tm, "SETTINGS", "start_time")
+        self.version = kw['version']
+
+    def on_st_tm(self,s,k,v):
+        self.tm = v
 
     def erase_log(self):
         EventLog.delete().execute()
@@ -162,8 +190,8 @@ class SetPage(Screen):
             try:
                 response = ntp.request(server)
                 globals.offset = response.offset
-                print(server)
                 globals.settings["SETTINGS"]["offset"] = str(globals.offset)
+                globals.settings["SETTINGS"]["last_sync_time"] = datetime.now().strftime("%d/%m/%y %H:%M:%S.%f")
                 globals.settings.write()
                 Dialog(self, "-Done-").open()
                 return 0  # exit the function if the time was synced
@@ -172,6 +200,9 @@ class SetPage(Screen):
         # For debugging purposes (only shown if the time couldn't be synced)
         Dialog(self, "Done").open()
         return 1
+
+    def re_start(self):
+        Re_StartPopup().open()
 
 
 class StageSel(Screen):
@@ -217,15 +248,16 @@ class StageSel(Screen):
 
         # Dont show stage no./regroup no. selection widget if the stage is "Rally Start" or "Rally Finish"
         if value in list1:
-            if self.stg_sel in self.box.children:
-                self.show_stg_sel = False
-                self.box.remove_widget(self.stg_sel)
+            showhide_widget(self.stg_sel)
+            self.show_stg_sel = False
+            # self.box.remove_widget(self.stg_sel)
         else:
-            if (
-                self.stg_sel not in self.box.children
-            ):  # show the widget again if it wasnt already shown
-                self.show_stg_sel = True
-                self.box.add_widget(self.stg_sel, index=1)
+            # if (
+            #     self.stg_sel not in self.box.children
+            # ):  # show the widget again if it wasnt already shown
+            showhide_widget(self.stg_sel, False)
+            self.show_stg_sel = True
+            # self.box.add_widget(self.stg_sel, index=1)
 
             # Keeping the text format of the button on the home screen similar to the NRS app
             if value in list2:
@@ -285,9 +317,9 @@ class StageSel(Screen):
 
         # if the stage no/regroup no selection widget wasnt present but the button text still has stage no., this will remove it.
         # on the other hand, if the stage no/regroup no selection widget is present but the button text doesnt have stage no., this will add it
-        if not self.stg_sel in self.box.children and app.loc_but.text[-1].isnumeric():
+        if not self.show_stg_sel and app.loc_but.text[-1].isnumeric():
             app.loc_but.text = app.loc_but.text[:-3]
-        elif self.stg_sel in self.box.children and not app.loc_but.text[-1].isnumeric():
+        elif self.show_stg_sel and not app.loc_but.text[-1].isnumeric():
             app.loc_but.text = app.loc_but.text + f"-{int(self.stg_sel_drop.text):02}"
 
     def on_no(self, value):
@@ -298,12 +330,21 @@ class Page3(Screen):
     """Class for the Page3 Screen"""
 
     rv = ObjectProperty(None)
+    tm_label = ObjectProperty(None)
+    capt_button = ObjectProperty(None)
     prev_offset = ObjectProperty(0)
+    _start_timer = False
 
     def __init__(self, **kw):
         """Initial input of the records to the RecycleView from the log file"""
 
         super().__init__(**kw)
+
+        globals.settings.add_callback(self.on_start_time, "SETTINGS", "stage")
+        globals.settings.add_callback(self.on_st_tm, "SETTINGS", "start_time")
+
+        self.on_start_time("SETTINGS", "stage", globals.settings["SETTINGS"]["stage"])
+
         for i in EventLog.select():
             self.rv.data.insert(
                 0,
@@ -315,8 +356,18 @@ class Page3(Screen):
                     "rtm": i.rtime,
                 },
             )
-
-    def on_capture(self, time):
+    def auto_capture(self,delay):
+        if globals.synced_time.time().second == 0:
+            prev_timer = self._timer
+            prev_timer.cancel()
+            del self._timer
+            self.on_capture(datetime.now())
+            self._auto_time = datetime.combine(datetime.today(), globals.synced_time.time())
+            self._timer = Clock.schedule_interval(lambda dt: self.capture(delay), delay)
+    def capture(self, dt):
+        self._auto_time += timedelta(seconds=dt)
+        self.on_capture(self._auto_time, True)
+    def on_capture(self, time:datetime,auto=False):
         """Adds the new row to the RecycleView(at the top) and to the logfile database(at the end)"""
 
         # The button text for the Stage Selection button also acts as an
@@ -325,7 +376,10 @@ class Page3(Screen):
         loc = App.get_running_app().loc_but.text
         loc = loc.split("\n")
         loc = loc[1]
-        tm = globals.synced_time.time()
+        if not auto:
+            tm = globals.synced_time.time()
+        else:
+            tm = time.time()
 
         row = EventLog.insert(carno="", location=loc, date=time.date(), time=tm)
         row.execute()
@@ -336,6 +390,30 @@ class Page3(Screen):
 
         globals.settings["SETTINGS"]["up_count"] = str(0)
         globals.settings.write()
+    def on_st_tm(self,s,k,v):
+        if hasattr(self, "_timer"):
+            prev_timer = self._timer
+            delay = globals.settings.getfloat("SETTINGS", "start_time") * 60
+            self._timer = Clock.schedule_interval(lambda dt: self.auto_capture(delay), 0.1)
+            prev_timer.cancel()
+            del prev_timer
+            # schedule.cancel_job(self._timer)
+            # self._timer = schedule.every(globals.settings.getfloat(s,k)).minutes.do(lambda: print("hello"))
+            # schedule.run_pending()
+    def on_start_time(self, sec, key, value):
+        if value == "Rally Start of the day":
+            if not hasattr(self, "_timer"):
+                delay = globals.settings.getfloat("SETTINGS", "start_time") * 60
+                self._timer= Clock.schedule_interval(lambda dt: self.auto_capture(delay), 0.1)
+            # if globals.settings.getfloat("SETTINGS", "start_time") != None:
+            showhide_widget(self.capt_button)
+            showhide_widget(self.tm_label, False)
+        else:
+            if hasattr(self, "_timer"):
+                self._timer.cancel()
+                del self._timer
+            showhide_widget(self.tm_label)
+            showhide_widget(self.capt_button, False)
 
 
 class ViewLog(Screen):

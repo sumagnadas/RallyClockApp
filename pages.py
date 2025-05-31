@@ -108,7 +108,7 @@ class Home(Screen):
                 .open("Rally Clock Data")
                 .sheet1
             )
-        EventLog.upload(self.sheet, name)
+        EventLog.upload(self.sheet, name,self.fl,self.sync_done)
         Dialog(self, "Done Uploading").show(10)
         now = datetime.now()
         self.last_up_time = now

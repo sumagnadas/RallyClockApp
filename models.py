@@ -35,14 +35,14 @@ class EventLog(Model):
     class Meta:
         database = db
 
-    def upload(sheet, name):
+    def upload(sheet, name,fl_mode,sync):
         log = EventLog.select()
         data = list()
-        data.append(['Car no.', 'Time', 'Restart Time', 'Lifeline','Location','Date','Uploader Name'])
+        data.append(['Car no.', 'Time', 'Restart Time', 'Lifeline','Location','Date','Uploader Name','Flight Mode','Synced'])
         for i in log:
             rtime = str(i.rtime) if i.is_rtm else ''
             LL = 'Yes' if i.LL else 'No'
-            data.append(['' if not i.carno else str(i.carno), str(i.time), rtime, LL, i.location, str(i.date),name])
+            data.append(['' if not i.carno else str(i.carno), str(i.time), rtime, LL, i.location, str(i.date),name,fl_mode,sync])
         sheet.append_rows(data)
 
 

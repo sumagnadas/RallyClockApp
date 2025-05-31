@@ -84,18 +84,6 @@ class Home(Screen):
         dt_ob = datetime.strptime(v, "%d/%m/%y %H:%M:%S.%f")
         self.sync_done = "No" if datetime.today().date() > dt_ob.date() else "Yes"
 
-    def on_cap(self, obj):
-        """Checks if Airplane mode is turned on before going to capture screen"""
-
-        Global = autoclass("android.provider.Settings$Global")
-        is_airpl = Global.getString(
-            mActivity.getContentResolver(), Global.AIRPLANE_MODE_ON
-        )
-        if not int(is_airpl):
-            FlightPopup(self.manager).open()
-        else:
-            self.manager.current = "Page3"
-
     def upload(self):
         UploadPopup(self.on_upload).open()
 

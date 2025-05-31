@@ -25,7 +25,7 @@
             size_hint_y: 0.15
             bold:True
             text: "Time Capture"
-            on_release: root.on_cap(self)
+            on_release: root.manager.current = "Page3"
             font_size:  (self.height ** 1.2 + self.width ** 1.2) ** 0.5
         BoxLayout:
             size_hint_y: 0.15
@@ -71,7 +71,7 @@
             RoundedButton
                 size_hint_x: 0.25
                 color: 0,0,0
-                text: 'More Options'
+                text: 'More\nOptions'
                 bold: True
                 font_size:  (self.height ** 1.2 + self.width ** 1.2) ** 0.5
                 text_size: self.size
@@ -83,24 +83,20 @@
                 size_hint_x:0.35
                 color: 0,0,0
                 Label:
-                    underline:True
                     size_hint_y:0.5
                     markup: True
                     text_size:self.size
-                    bold: True
-                    halign: 'center'
+                    halign: 'left'
                     valign: 'bottom'
-                    text: f'Flight Mode: {root.fl}'
+                    text: f'[size=14sp]Flight:[/size] [size=16sp][b]{root.fl}[/b][/size]'
                     color:0,0,0
                 Label:
-                    underline:True
                     size_hint_y:0.5
                     markup: True
                     text_size:self.size
-                    bold: True
-                    halign: 'center'
+                    halign: 'left'
                     valign: 'bottom'
-                    text: f'Synced: {root.sync_done}'
+                    text: f'[size=14sp]Synced:[/size] [size=16sp][b]{root.sync_done}[/b][/size]'
                     color:0,0,0
             Image:
                 size_hint_x: 0.4

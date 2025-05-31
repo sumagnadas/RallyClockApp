@@ -1,9 +1,9 @@
+from datetime import datetime, timedelta
+
 from kivy.base import Builder
 from kivy.config import ConfigParser
+
 from models import settings_file
-from datetime import datetime, timedelta
-from time import sleep
-from threading import Timer,Thread, Event
 
 Builder.load_file("base.kv")
 settings = ConfigParser()
@@ -14,7 +14,7 @@ if settings.sections() == []:
         "day": "1",
         "stg_no": "1",
         "use_ll": "True",
-        "offset" : "0",
+        "offset": "0",
         "up_count": "0",
         "use_rt": "True",
         "start_time": "1",
@@ -57,14 +57,16 @@ synced_time = datetime(1, 1, 1, 1, 1, 1)  # Time object synced with NTP server
 
 def showhide_widget(widget, hide=True):
     if not hide:
-        if hasattr(widget, 'saved_attrs'):
-            widget.height = widget.saved_attrs[0] 
+        if hasattr(widget, "saved_attrs"):
+            widget.height = widget.saved_attrs[0]
             widget.size_hint_y = widget.saved_attrs[1]
-            widget.opacity= widget.saved_attrs[2]
+            widget.opacity = widget.saved_attrs[2]
             widget.disabled = widget.saved_attrs[3]
     elif hide:
         if not widget.disabled:
-            print(f"meow:{(widget.height,widget.size_hint_y,widget.opacity,widget.disabled,)}")
+            print(
+                f"meow:{(widget.height,widget.size_hint_y,widget.opacity,widget.disabled,)}"
+            )
             widget.saved_attrs = (
                 widget.height,
                 widget.size_hint_y,
@@ -77,6 +79,7 @@ def showhide_widget(widget, hide=True):
                 0,
                 True,
             )
+
 
 def update_clock(dt):
     """Adds an offset to the local time to sync it to the NTP server"""

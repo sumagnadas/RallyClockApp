@@ -3,27 +3,28 @@ This script contains the widgets which are used by
 one or more of the screens shown in the app
 """
 
+from datetime import time
+
 from kivy.app import App
 from kivy.clock import Clock
 from kivy.graphics import Color, RoundedRectangle
 from kivy.properties import (
-    StringProperty,
-    ObjectProperty,
     BooleanProperty,
     NumericProperty,
+    ObjectProperty,
+    StringProperty,
 )
-from kivy.uix.recycleview import RecycleView
-from kivy.uix.recycleview.views import RecycleDataViewBehavior
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.textinput import TextInput
 from kivy.uix.button import Button
 from kivy.uix.label import Label
-from kivy.uix.popup import Popup
 from kivy.uix.modalview import ModalView
-from datetime import time
+from kivy.uix.popup import Popup
+from kivy.uix.recycleview import RecycleView
+from kivy.uix.recycleview.views import RecycleDataViewBehavior
+from kivy.uix.textinput import TextInput
 
-from models import EventLog
 import globals
+from models import EventLog
 
 
 class UploadPopup(Popup):
@@ -415,13 +416,13 @@ class Re_StartPopup(Popup):
     """
     Class for the popup which shows up when asking whether
     the user wants to capture time without turning on airplane mode or not
-    """ 
+    """
+
     tm = ObjectProperty(None)
 
     def __init__(self, **kwargs):
-        # self.manager = manager
         super().__init__(**kwargs)
 
     def change_time(self, value):
-        globals.settings["SETTINGS"]['start_time'] =str(value)
+        globals.settings["SETTINGS"]["start_time"] = str(value)
         self.dismiss()

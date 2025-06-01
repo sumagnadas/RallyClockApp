@@ -71,7 +71,7 @@
                     id: stage
                     text: 'Time Control IN'
                     size_hint_x:0.6
-                    values: 'Time Control IN', 'Arrival in Special Stage', 'Start of Special Stage', 'Finish of Special Stage','Rally Start of the day', 'Rally Finish of the day','Service IN', 'Service OUT', 'Regroup IN', 'Regroup OUT'
+                    values: 'Time Control IN', 'Rally Start of the day'
                     on_text: root.on_stage(self.text)
             BoxLayout:
                 orientation: "horizontal"
@@ -202,13 +202,11 @@
                     size_hint_x:0.3
                     on_active: root.on_ll_active(self.active)
             Label:
-                underline:True
                 size_hint_y:0.4
                 markup: True
                 text_size:self.size
-                bold: True
                 halign: 'center'
                 valign: 'bottom'
-                text: f'[ref=mail]Feedback and Queries\nrallyclockuploader@gmail.com[/ref]\nv{root.version}'
+                text: f'[ref=mail]Feedback and Queries\n[u][b]rallyclockuploader@gmail.com[/u][/b][/ref]\nRally Clock v{root.version}'
                 color:0,0,0
                 on_ref_press: link.open('mailto:rallyclockuploader@gmail.com')

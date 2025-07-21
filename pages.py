@@ -289,11 +289,11 @@ class StageSel(Screen):
         # if day no. has changed
         if day_no:
             globals.settings["SETTINGS"]["day"] = day_no
-            app.loc_but.text = string[:10] + day_no + string[11:]
+            app.loc_but.text = string[:10] + day_no + string[12:]
 
         # if current stage has changed
         elif curr_stg:
-            app.loc_but.text = string[:12] + curr_stg + string[14:]
+            app.loc_but.text = string[:13] + curr_stg + string[15:]
 
         # if stage no./regroup no has changed (not present when at stage "Rally Start" or "Rally Finish")
         elif stg_no:

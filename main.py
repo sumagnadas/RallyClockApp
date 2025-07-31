@@ -4,7 +4,7 @@ It starts the main thread as well as setup the app for running
 
 """
 
-__version__ = "2.0"
+__version__ = "2.1"
 from kivy.app import App
 from kivy.clock import Clock
 from kivy.core.window import Window

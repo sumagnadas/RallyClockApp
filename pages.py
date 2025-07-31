@@ -289,7 +289,7 @@ class StageSel(Screen):
         # if day no. has changed
         if day_no:
             globals.settings["SETTINGS"]["day"] = day_no
-            app.loc_but.text = string[:10] + day_no + string[12:]
+            app.loc_but.text = f"Location\nD{day_no}-{string[13:]}"
 
         # if current stage has changed
         elif curr_stg:

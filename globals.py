@@ -10,41 +10,14 @@ settings = ConfigParser()
 settings.read(settings_file)
 if settings.sections() == []:
     settings["SETTINGS"] = {
-        "stage": "Time Control In",
-        "day": "1",
-        "stg_no": "1",
-        "use_ll": "True",
         "offset": "0",
-        "up_count": "0",
-        "use_rt": "True",
-        "start_time": "1",
         "last_sync_time": "31/01/22 23:59:59.999999",
     }
     settings.write()
 
 # Backwards Compatibility
-if "use_ll" not in settings.options("SETTINGS"):
-    settings["SETTINGS"]["use_ll"] = "True"
-    settings.write()
-
 if "offset" not in settings.options("SETTINGS"):
     settings["SETTINGS"]["offset"] = "0"
-    settings.write()
-
-if "up_count" not in settings.options("SETTINGS"):
-    settings["SETTINGS"]["up_count"] = "0"
-    settings.write()
-
-if "use_rt" not in settings.options("SETTINGS"):
-    settings["SETTINGS"]["use_rt"] = "True"
-    settings.write()
-
-if "start_time" not in settings.options("SETTINGS"):
-    settings["SETTINGS"]["start_time"] = "1"
-    settings.write()
-
-if "last_sync_time" not in settings.options("SETTINGS"):
-    settings["SETTINGS"]["last_sync_time"] = "31/01/22 23:59:59.999999"
     settings.write()
 
 offset = settings.getfloat("SETTINGS", "offset")

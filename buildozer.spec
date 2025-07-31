@@ -1,10 +1,10 @@
 [app]
 
 # (str) Title of your application
-title = Rally Clock
+title = Rally Clock (Crew)
 
 # (str) Package name
-package.name = RallyClock
+package.name = RallyClockCrew
 
 # (str) Package domain (needed for android/ios packaging)
 package.domain = org.test
@@ -37,7 +37,7 @@ version.filename = %(source.dir)s/main.py
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3,kivy,peewee,gspread,google-auth,google-auth-oauthlib,cachetools,pyasn1,pyasn1_modules,rsa,requests-oauthlib,oauthlib,certifi,charset-normalizer,idna,urllib3,ntplib,schedule
+requirements = python3,kivy,cachetools,pyasn1,pyasn1_modules,rsa,requests-oauthlib,oauthlib,certifi,charset-normalizer,idna,urllib3,ntplib,schedule
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
@@ -415,7 +415,7 @@ log_level = 2
 warn_on_root = 1
 
 # (str) Path to build artifact storage, absolute or relative to spec file
-# build_dir = ./.buildozer
+# build_dir = ./.buildozer_crew
 
 # (str) Path to build output (i.e. .apk, .aab, .ipa) storage
 # bin_dir = ./bin

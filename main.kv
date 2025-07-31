@@ -1,7 +1,6 @@
 #: kivy 2.0.0
 
 <Home>:
-    loc_but:loc_but
     tm1: tm1
     tm2: tm2
     canvas.before:
@@ -15,52 +14,28 @@
         padding: 10, 10
         spacing: 10
         Label:
-            size_hint_y: 0.05
+            canvas.before:
+                Color:
+                    rgb: 189/255, 228/255, 244/255
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+            size_hint_y: 0.1
             font_name: 'font.ttf'
             color: 0,0,0
-            text: 'Rally Clock - Marshal'
-            font_size:  (self.height * 0.9)
-        RoundedButton:
-            color: 0,0,0
-            size_hint_y: 0.15
-            bold:True
-            text: "Time Capture"
-            on_release: root.manager.current = "Page3"
-            font_size:  (self.height ** 1.2 + self.width ** 1.2) ** 0.5
-        BoxLayout:
-            size_hint_y: 0.15
-            spacing: 10
-            RoundedButton:
-                color: 0,0,0
-                text: 'Log'
-                bold:True
-                on_release: root.on_log(self)
-                font_size:  (self.height ** 1.2 + self.width ** 1.2) ** 0.5
-            RoundedButton:
-                id: loc_but
-                color: 0,0,0
-                halign: 'center'
-                bold:True
-                text: 'Location\nD01-TC-01'
-                on_release: root.manager.current = "StageSel"
-                font_size:  (self.height ** 1.2 + self.width ** 1.2) ** 0.5
-            RoundedButton:
-                color: 0,0,0
-                text: root.up_info
-                bold:True
-                on_release: root.upload()
-                font_size:  (self.height ** 1.2 + self.width ** 1.2) ** 0.5
+            text: 'Rally Clock - Crew'
+            font_size:  (self.height * 0.6)
         Label:
             id: tm1
-            size_hint_y:0.2
+            size_hint_y:0.35
             color: 0,0,0
-            font_size: self.height * 0.9
+            font_size: self.height * 0.5
             bold: True
             text: "11:23"
         Label:
             id: tm2
-            font_size: self.height * 0.9
-            size_hint_y: 0.3
+            font_size: self.height * 0.5
+            size_hint_y: 0.4
             color: 0,0,0
             bold: True
             text: "56"

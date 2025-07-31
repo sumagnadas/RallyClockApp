@@ -1,6 +1,6 @@
 tutorial*
 __pycache__/*
-.buildozer/*
+.buildozer*/*
 bin/*
 *.db
 *.json

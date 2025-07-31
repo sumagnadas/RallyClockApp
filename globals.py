@@ -11,8 +11,8 @@ settings.read(settings_file)
 if settings.sections() == []:
     settings["SETTINGS"] = {
         "stage": "Time Control In",
-        "day": "1",
-        "stg_no": "1",
+        "day": "01",
+        "stg_no": "01",
         "use_ll": "True",
         "offset": "0",
         "up_count": "0",
@@ -46,6 +46,12 @@ if "start_time" not in settings.options("SETTINGS"):
 if "last_sync_time" not in settings.options("SETTINGS"):
     settings["SETTINGS"]["last_sync_time"] = "31/01/22 23:59:59.999999"
     settings.write()
+
+if "day" in settings.options("SETTINGS"):
+    settings["SETTINGS"]["day"] = "01"
+
+if "stg_no" in settings.options("SETTINGS"):
+    settings["SETTINGS"]["stg_no"] = "01"
 
 offset = settings.getfloat("SETTINGS", "offset")
 prev_offset = (
